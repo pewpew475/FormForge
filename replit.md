@@ -2,6 +2,13 @@
 
 FormCraft is a comprehensive form builder application that allows users to create, customize, and deploy interactive forms with specialized question types. The application supports three main question types: categorization (drag items into categories), cloze (fill in the blanks), and comprehension (reading comprehension with multiple choice questions). Built with a modern React frontend and Express.js backend, the system provides a visual form builder interface and a responsive form-filling experience.
 
+**Recent Updates (Aug 2025):**
+- Added Vercel deployment configuration with Supabase integration
+- Implemented real image storage with Supabase Storage
+- Enhanced form builder UI with collapsible settings and better UX
+- Added automatic scoring system with detailed score breakdown
+- Configured production-ready PostgreSQL database setup
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -24,10 +31,18 @@ Preferred communication style: Simple, everyday language.
 - **Development Server**: Vite integration for hot module replacement and fast development builds
 
 ## Data Storage Solutions
-- **Primary Database**: PostgreSQL with Neon Database serverless hosting
+- **Primary Database**: PostgreSQL with Supabase hosting (production) / Neon Database (development)
+- **Image Storage**: Supabase Storage for production images, data URLs for development
 - **ORM**: Drizzle ORM for schema definition, migrations, and type-safe queries
 - **Schema Design**: Two main tables (forms and responses) with JSONB columns for flexible question storage
 - **Session Management**: PostgreSQL-based session storage using connect-pg-simple
+
+## Deployment Configuration
+- **Platform**: Vercel with serverless functions
+- **Database**: Supabase PostgreSQL
+- **Storage**: Supabase Storage for images
+- **Environment**: Production-ready with environment variable configuration
+- **Build Process**: Optimized for Vercel deployment with proper build scripts
 
 ## Form Builder Features
 - **Question Types**: Three specialized question types with unique interfaces and validation

@@ -174,7 +174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // File upload endpoint with real image handling
+  // File upload endpoint with Supabase Storage
   app.post("/api/upload", async (req, res) => {
     try {
       const { file, fileName } = req.body;
@@ -190,16 +190,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(413).json({ message: "File too large. Maximum size is 5MB." });
       }
 
-      // Generate unique filename
-      const timestamp = Date.now();
-      const extension = fileName ? fileName.split('.').pop() : 'jpg';
-      const uniqueFileName = `${timestamp}-${Math.random().toString(36).substring(7)}.${extension}`;
-      
-      // In a real deployment, you would save to cloud storage (AWS S3, Cloudinary, etc.)
-      // For now, we'll create a data URL that can be used immediately
-      const imageUrl = `data:image/${extension};base64,${file}`;
-      
-      res.json({ url: imageUrl });
+      // For development, use data URLs; for production, you'd use Supabase Storage
+      if (process.env.NODE_ENV === 'production' && process.env.SUPABASE_URL) {
+        try {
+          const { supabase, STORAGE_BUCKET } = await import('./supabase');
+          
+          // Generate unique filename
+          const timestamp = Date.now();
+          const extension = fileName ? fileName.split('.').pop() : 'jpg';
+          const uniqueFileName = `${timestamp}-${Math.random().toString(36).substring(7)}.${extension}`;
+          
+          // Convert base64 to buffer
+          const buffer = Buffer.from(file, 'base64');
+          
+          // Upload to Supabase Storage
+          const { data, error } = await supabase.storage
+            .from(STORAGE_BUCKET)
+            .upload(uniqueFileName, buffer, {
+              contentType: `image/${extension}`,
+              cacheControl: '3600',
+              upsert: false
+            });
+
+          if (error) {
+            console.error('Supabase upload error:', error);
+            throw error;
+          }
+
+          // Get public URL
+          const { data: publicUrlData } = supabase.storage
+            .from(STORAGE_BUCKET)
+            .getPublicUrl(data.path);
+
+          res.json({ url: publicUrlData.publicUrl });
+        } catch (supabaseError) {
+          console.error('Supabase upload failed, falling back to data URL:', supabaseError);
+          // Fallback to data URL if Supabase fails
+          const extension = fileName ? fileName.split('.').pop() : 'jpg';
+          const imageUrl = `data:image/${extension};base64,${file}`;
+          res.json({ url: imageUrl });
+        }
+      } else {
+        // Development mode - use data URLs
+        const extension = fileName ? fileName.split('.').pop() : 'jpg';
+        const imageUrl = `data:image/${extension};base64,${file}`;
+        res.json({ url: imageUrl });
+      }
     } catch (error) {
       console.error("Upload error:", error);
       res.status(500).json({ message: "Failed to upload file. Please try a smaller image." });

@@ -1,13 +1,42 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { Link } from "wouter";
 import { Plus, Eye, Edit, Trash2, BarChart3 } from "lucide-react";
 import type { Form } from "@shared/schema";
 
 export default function Home() {
+  const [deleteFormId, setDeleteFormId] = useState<string | null>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
   const { data: forms, isLoading } = useQuery<Form[]>({
     queryKey: ["/api/forms"],
+  });
+
+  const deleteFormMutation = useMutation({
+    mutationFn: async (formId: string) => {
+      return apiRequest("DELETE", `/api/forms/${formId}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Form deleted successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/forms"] });
+      setDeleteFormId(null);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete form",
+        variant: "destructive",
+      });
+    },
   });
 
   return (
@@ -93,14 +122,36 @@ export default function Home() {
                           </Button>
                         </Link>
                       )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 hover:text-red-700"
-                        data-testid={`button-delete-form-${form.id}`}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700"
+                            data-testid={`button-delete-form-${form.id}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Form</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete "{form.title}"? This action cannot be undone and will permanently delete the form and all its responses.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deleteFormMutation.mutate(form.id)}
+                              className="bg-red-600 hover:bg-red-700"
+                              disabled={deleteFormMutation.isPending}
+                            >
+                              {deleteFormMutation.isPending ? "Deleting..." : "Delete"}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 </CardContent>

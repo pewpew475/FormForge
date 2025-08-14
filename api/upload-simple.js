@@ -36,41 +36,43 @@ export default async function handler(req, res) {
       }
     );
 
-    const { image, filename } = req.body || {};
-    
-    console.log('Request data:', { 
-      hasImage: !!image, 
-      imageType: typeof image,
-      imageLength: image ? image.length : 0,
-      filename 
+    const { file, fileName } = req.body || {};
+
+    console.log('Request data:', {
+      hasFile: !!file,
+      fileType: typeof file,
+      fileLength: file ? file.length : 0,
+      fileName
     });
-    
-    if (!image || !filename) {
+
+    if (!file || !fileName) {
       console.error('Missing required fields');
-      res.status(400).json({ 
-        error: 'Image and filename are required',
-        received: { hasImage: !!image, hasFilename: !!filename }
+      res.status(400).json({
+        error: 'File and fileName are required',
+        received: { hasFile: !!file, hasFileName: !!fileName }
       });
       return;
     }
 
     const bucketName = 'form-images';
     
-    // Convert base64 to buffer
-    const base64Data = image.replace(/^data:image\/[a-z]+;base64,/, '');
-    const buffer = Buffer.from(base64Data, 'base64');
-    
+    // Convert base64 to buffer (frontend sends just base64 data)
+    const buffer = Buffer.from(file, 'base64');
+
     // Generate unique filename
-    const uniqueFilename = `${Date.now()}-${filename}`;
-    
-    // Detect content type
+    const uniqueFilename = `${Date.now()}-${fileName}`;
+
+    // Detect content type from filename extension
     let contentType = 'image/jpeg';
-    if (image.startsWith('data:image/png')) {
+    const extension = fileName.toLowerCase().split('.').pop();
+    if (extension === 'png') {
       contentType = 'image/png';
-    } else if (image.startsWith('data:image/gif')) {
+    } else if (extension === 'gif') {
       contentType = 'image/gif';
-    } else if (image.startsWith('data:image/webp')) {
+    } else if (extension === 'webp') {
       contentType = 'image/webp';
+    } else if (extension === 'jpg' || extension === 'jpeg') {
+      contentType = 'image/jpeg';
     }
     
     console.log('Uploading:', { bucketName, uniqueFilename, contentType, bufferSize: buffer.length });

@@ -1,4 +1,6 @@
-import { type Form, type InsertForm, type Response, type InsertResponse } from "@shared/schema";
+import { type Form, type InsertForm, type Response, type InsertResponse, forms, responses } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -9,6 +11,66 @@ export interface IStorage {
   getForms(): Promise<Form[]>;
   createResponse(response: InsertResponse): Promise<Response>;
   getResponses(formId: string): Promise<Response[]>;
+}
+
+export class DatabaseStorage implements IStorage {
+  async createForm(insertForm: InsertForm): Promise<Form> {
+    const [form] = await db
+      .insert(forms)
+      .values({
+        title: insertForm.title,
+        description: insertForm.description || null,
+        headerImage: insertForm.headerImage || null,
+        questions: insertForm.questions,
+        isPublished: insertForm.isPublished || false,
+      })
+      .returning();
+    return form as Form;
+  }
+
+  async getForm(id: string): Promise<Form | undefined> {
+    const [form] = await db.select().from(forms).where(eq(forms.id, id));
+    return form as Form | undefined;
+  }
+
+  async updateForm(id: string, updateData: Partial<InsertForm>): Promise<Form | undefined> {
+    const [form] = await db
+      .update(forms)
+      .set({
+        ...updateData,
+        updatedAt: new Date(),
+      })
+      .where(eq(forms.id, id))
+      .returning();
+    return form as Form | undefined;
+  }
+
+  async deleteForm(id: string): Promise<boolean> {
+    const result = await db.delete(forms).where(eq(forms.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async getForms(): Promise<Form[]> {
+    const allForms = await db.select().from(forms).orderBy(forms.createdAt);
+    return allForms as Form[];
+  }
+
+  async createResponse(insertResponse: InsertResponse): Promise<Response> {
+    const [response] = await db
+      .insert(responses)
+      .values(insertResponse)
+      .returning();
+    return response;
+  }
+
+  async getResponses(formId: string): Promise<Response[]> {
+    const formResponses = await db
+      .select()
+      .from(responses)
+      .where(eq(responses.formId, formId))
+      .orderBy(responses.submittedAt);
+    return formResponses;
+  }
 }
 
 export class MemStorage implements IStorage {
@@ -80,4 +142,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

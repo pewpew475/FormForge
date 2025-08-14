@@ -15,6 +15,8 @@ export default function FormFill() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [responses, setResponses] = useState<Record<string, any>>({});
+  const [showScore, setShowScore] = useState(false);
+  const [scoreData, setScoreData] = useState<any>(null);
 
   const { data: form, isLoading, error } = useQuery<Form>({
     queryKey: ["/api/forms", id],
@@ -25,12 +27,13 @@ export default function FormFill() {
     mutationFn: async (responseData: InsertResponse) => {
       return apiRequest("POST", `/api/forms/${id}/responses`, responseData);
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
+      setScoreData(data.score);
+      setShowScore(true);
       toast({
-        title: "Success",
+        title: "Success", 
         description: "Your response has been submitted successfully!",
       });
-      setLocation("/");
     },
     onError: () => {
       toast({
@@ -174,6 +177,50 @@ export default function FormFill() {
           </Button>
         </div>
       </div>
+      
+      {/* Score Modal */}
+      {showScore && scoreData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <Card className="max-w-md w-full p-6">
+            <h2 className="text-2xl font-bold text-center mb-4">Your Score</h2>
+            <div className="text-center">
+              <div className="text-6xl font-bold text-primary mb-2">
+                {scoreData.percentage}%
+              </div>
+              <p className="text-lg text-slate-600 mb-4">
+                {scoreData.correctAnswers} out of {scoreData.totalQuestions} correct
+              </p>
+              <div className="space-y-2 text-left mb-6">
+                {Object.entries(scoreData.questionScores).map(([questionId, score]: [string, any]) => (
+                  <div key={questionId} className="flex justify-between items-center">
+                    <span className="text-sm text-slate-600">Question {Object.keys(scoreData.questionScores).indexOf(questionId) + 1}</span>
+                    <span className={`text-sm font-medium ${score.correct ? 'text-green-600' : 'text-red-600'}`}>
+                      {score.earned}/{score.total}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex space-x-3">
+                <Button 
+                  onClick={() => setLocation("/")}
+                  className="flex-1"
+                  data-testid="button-go-home"
+                >
+                  Go Home
+                </Button>
+                <Button 
+                  onClick={() => setShowScore(false)}
+                  variant="outline"
+                  className="flex-1"
+                  data-testid="button-close-score"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

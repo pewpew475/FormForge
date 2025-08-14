@@ -21,13 +21,41 @@ export function FileUpload({ onUpload, currentImage, onRemove, className, accept
 
     setIsUploading(true);
     try {
-      // In a real implementation, you would upload the file
-      // For now, create a mock URL
-      const mockUrl = `/uploads/${Date.now()}-${file.name}`;
-      onUpload(mockUrl);
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64 = e.target?.result as string;
+        const base64Data = base64.split(',')[1]; // Remove data:image/...;base64, prefix
+        
+        // Upload to server
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            file: base64Data,
+            fileName: file.name,
+          }),
+        });
+        
+        if (response.ok) {
+          const { url } = await response.json();
+          onUpload(url);
+        } else {
+          throw new Error('Upload failed');
+        }
+        setIsUploading(false);
+      };
+      
+      reader.onerror = () => {
+        console.error("Failed to read file");
+        setIsUploading(false);
+      };
+      
+      reader.readAsDataURL(file);
     } catch (error) {
       console.error("Upload failed:", error);
-    } finally {
       setIsUploading(false);
     }
   };

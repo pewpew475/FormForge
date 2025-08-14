@@ -18,6 +18,7 @@ export const responses = pgTable("responses", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   formId: varchar("form_id").notNull().references(() => forms.id),
   answers: jsonb("answers").notNull(),
+  score: jsonb("score"), // Store scoring results
   submittedAt: timestamp("submitted_at").notNull().default(sql`now()`),
 });
 

@@ -60,11 +60,11 @@ export function useFormBuilder(formId?: string) {
     if (form) {
       // If we have a form from API, update it via mutation
       const formData: InsertForm = {
-        title: updates.title || form.title,
-        description: updates.description || form.description,
-        headerImage: updates.headerImage || form.headerImage,
-        questions: updates.questions || form.questions,
-        isPublished: updates.isPublished ?? form.isPublished,
+        title: updates.title !== undefined ? updates.title : form.title,
+        description: updates.description !== undefined ? updates.description : form.description,
+        headerImage: updates.headerImage !== undefined ? updates.headerImage : form.headerImage,
+        questions: updates.questions !== undefined ? updates.questions : form.questions,
+        isPublished: updates.isPublished !== undefined ? updates.isPublished : form.isPublished,
       };
       saveFormMutation.mutate(formData);
     } else {

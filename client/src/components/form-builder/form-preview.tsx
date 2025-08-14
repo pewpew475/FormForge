@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { X, Link as LinkIcon } from "lucide-react";
-import { CategorizeResponse } from "@/components/form-fill/categorize-response";
-import { ClozeResponse } from "@/components/form-fill/cloze-response";
-import { ComprehensionResponse } from "@/components/form-fill/comprehension-response";
+import { CategorizeResponse } from "../form-fill/categorize-response";
+import { ClozeResponse } from "../form-fill/cloze-response";
+import { ComprehensionResponse } from "../form-fill/comprehension-response";
 import { useToast } from "@/hooks/use-toast";
 import type { Form } from "@shared/schema";
 

@@ -17,6 +17,7 @@
     "verify": "node scripts/verify-deployment.js",
     "setup": "node scripts/setup-deployment.js",
     "test-db": "node scripts/test-db.js",
+    "test-storage": "node scripts/test-storage.js",
     "vercel-build": "npm run build"
   },
   "dependencies": {

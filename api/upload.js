@@ -19,48 +19,60 @@ export default async function handler(req, res) {
 
   try {
     const { image, filename } = req.body;
-    
+
     if (!image || !filename) {
       res.status(400).json({ error: 'Image and filename are required' });
       return;
     }
 
     const supabase = getSupabase();
-    
+    const bucketName = 'form-images'; // Use hardcoded bucket name
+
     // Convert base64 to buffer
     const base64Data = image.replace(/^data:image\/[a-z]+;base64,/, '');
     const buffer = Buffer.from(base64Data, 'base64');
-    
+
     // Generate unique filename
     const uniqueFilename = `${Date.now()}-${filename}`;
-    
+
+    console.log('Uploading to bucket:', bucketName, 'filename:', uniqueFilename);
+
     // Upload to Supabase Storage
     const { data, error } = await supabase.storage
-      .from(STORAGE_BUCKET)
+      .from(bucketName)
       .upload(uniqueFilename, buffer, {
         contentType: 'image/jpeg',
-        cacheControl: '3600'
+        cacheControl: '3600',
+        upsert: true
       });
 
     if (error) {
-      throw error;
+      console.error('Storage upload error:', error);
+      res.status(400).json({
+        error: 'Storage upload failed',
+        message: error.message,
+        details: error
+      });
+      return;
     }
 
     // Get public URL
     const { data: { publicUrl } } = supabase.storage
-      .from(STORAGE_BUCKET)
+      .from(bucketName)
       .getPublicUrl(uniqueFilename);
 
-    res.status(200).json({ 
+    console.log('Upload successful, public URL:', publicUrl);
+
+    res.status(200).json({
       url: publicUrl,
-      filename: uniqueFilename 
+      filename: uniqueFilename
     });
-    
+
   } catch (error) {
     console.error('Upload error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Upload failed',
-      message: error.message 
+      message: error.message
     });
   }
 }

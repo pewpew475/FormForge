@@ -183,6 +183,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No file provided" });
       }
 
+      // Validate file size (base64 encoded, so approximately 4/3 of original size)
+      const estimatedSize = (file.length * 3) / 4;
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (estimatedSize > maxSize) {
+        return res.status(413).json({ message: "File too large. Maximum size is 5MB." });
+      }
+
       // Generate unique filename
       const timestamp = Date.now();
       const extension = fileName ? fileName.split('.').pop() : 'jpg';
@@ -195,7 +202,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ url: imageUrl });
     } catch (error) {
       console.error("Upload error:", error);
-      res.status(500).json({ message: "Failed to upload file" });
+      res.status(500).json({ message: "Failed to upload file. Please try a smaller image." });
     }
   });
 

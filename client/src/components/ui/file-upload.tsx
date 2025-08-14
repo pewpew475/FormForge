@@ -19,6 +19,19 @@ export function FileUpload({ onUpload, currentImage, onRemove, className, accept
   const handleFile = async (file: File) => {
     if (!file) return;
 
+    // Check file size (limit to 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      alert('Image is too large. Please select an image smaller than 5MB.');
+      return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file.');
+      return;
+    }
+
     setIsUploading(true);
     try {
       // Convert file to base64
@@ -43,7 +56,8 @@ export function FileUpload({ onUpload, currentImage, onRemove, className, accept
           const { url } = await response.json();
           onUpload(url);
         } else {
-          throw new Error('Upload failed');
+          const errorData = await response.json().catch(() => ({ message: 'Upload failed' }));
+          throw new Error(errorData.message || 'Upload failed');
         }
         setIsUploading(false);
       };
@@ -56,6 +70,8 @@ export function FileUpload({ onUpload, currentImage, onRemove, className, accept
       reader.readAsDataURL(file);
     } catch (error) {
       console.error("Upload failed:", error);
+      // Show user-friendly error message
+      alert(`Image upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setIsUploading(false);
     }
   };

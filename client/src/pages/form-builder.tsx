@@ -246,11 +246,17 @@ export default function FormBuilder() {
                 </div>
                 <Button
                   className={`${form.isPublished ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-500 hover:bg-green-600'} text-white`}
-                  onClick={() => {
+                  onClick={async () => {
                     if (!form.isPublished) {
                       updateForm({ isPublished: true });
-                      saveForm();
-                      setShowPublishModal(true);
+                      // Wait for the form to be saved before showing the modal
+                      try {
+                        await saveForm();
+                        setShowPublishModal(true);
+                      } catch (error) {
+                        // If save fails, revert the published state
+                        updateForm({ isPublished: false });
+                      }
                     } else {
                       updateForm({ isPublished: false });
                       saveForm();

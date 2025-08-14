@@ -35,17 +35,24 @@ export function useFormBuilder(formId?: string) {
   const saveFormMutation = useMutation({
     mutationFn: async (formData: InsertForm) => {
       if (formId) {
-        return apiRequest("PUT", `/api/forms?id=${formId}`, formData);
+        const response = await apiRequest("PUT", `/api/forms/${formId}`, formData);
+        return response.json();
       } else {
-        return apiRequest("POST", "/api/forms", formData);
+        const response = await apiRequest("POST", "/api/forms", formData);
+        return response.json();
       }
     },
-    onSuccess: () => {
+    onSuccess: (savedForm) => {
       toast({
         title: "Success",
         description: "Form saved successfully",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/forms"] });
+
+      // If this was a new form (no formId), update the URL to include the new form ID
+      if (!formId && savedForm.id) {
+        window.history.replaceState({}, '', `/builder/${savedForm.id}`);
+      }
     },
     onError: () => {
       toast({
@@ -127,7 +134,7 @@ export function useFormBuilder(formId?: string) {
       questions: currentForm.questions || [],
       isPublished: currentForm.isPublished || false,
     };
-    saveFormMutation.mutate(formData);
+    return saveFormMutation.mutateAsync(formData);
   }, [currentForm, saveFormMutation]);
 
   return {

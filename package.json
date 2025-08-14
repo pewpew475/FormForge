@@ -18,6 +18,7 @@
     "setup": "node scripts/setup-deployment.js",
     "test-db": "node scripts/test-db.js",
     "test-storage": "node scripts/test-storage.js",
+    "test-upload": "node scripts/test-upload-with-image.js",
     "vercel-build": "npm run build"
   },
   "dependencies": {

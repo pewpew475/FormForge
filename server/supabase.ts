@@ -31,5 +31,10 @@ export function getSupabase() {
   return initializeSupabase();
 }
 
-// Storage bucket name
+// Storage bucket name getter
+export function getStorageBucket() {
+  return process.env.SUPABASE_STORAGE_BUCKET || 'form-images';
+}
+
+// For backward compatibility
 export const STORAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'form-images';

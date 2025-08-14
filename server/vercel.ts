@@ -77,4 +77,5 @@ app.use((req, res, next) => {
   serveStatic(app);
 })();
 
+// Export for Vercel serverless functions
 export default app;

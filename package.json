@@ -7,7 +7,7 @@
     "dev": "cross-env NODE_ENV=development tsx server/index.ts",
     "build": "npm run build:client && npm run build:server",
     "build:client": "vite build",
-    "build:server": "esbuild server/index.ts server/vercel.ts --platform=node --packages=external --bundle --format=esm --outdir=dist --minify --external:pg-native",
+    "build:server": "esbuild server/index.ts server/vercel.ts server/supabase.ts --platform=node --packages=external --bundle --format=esm --outdir=dist --minify --external:pg-native",
     "start": "cross-env NODE_ENV=production node dist/index.js",
     "check": "tsc --noEmit",
     "db:push": "drizzle-kit push",

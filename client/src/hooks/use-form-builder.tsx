@@ -17,7 +17,7 @@ export function useFormBuilder(formId?: string) {
   const queryClient = useQueryClient();
 
   const { data: form, isLoading } = useQuery<Form>({
-    queryKey: ["/api/forms", formId],
+    queryKey: [`/api/forms?id=${formId}`],
     enabled: !!formId,
   });
 
@@ -35,7 +35,7 @@ export function useFormBuilder(formId?: string) {
   const saveFormMutation = useMutation({
     mutationFn: async (formData: InsertForm) => {
       if (formId) {
-        return apiRequest("PUT", `/api/forms/${formId}`, formData);
+        return apiRequest("PUT", `/api/forms?id=${formId}`, formData);
       } else {
         return apiRequest("POST", "/api/forms", formData);
       }

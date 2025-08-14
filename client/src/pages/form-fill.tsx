@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { Save, CheckCircle, Clock } from "lucide-react";
 import { CategorizeResponse } from "@/components/form-fill/categorize-response";
 import { ClozeResponse } from "@/components/form-fill/cloze-response";
 import { ComprehensionResponse } from "@/components/form-fill/comprehension-response";
@@ -17,15 +19,17 @@ export default function FormFill() {
   const [responses, setResponses] = useState<Record<string, any>>({});
   const [showScore, setShowScore] = useState(false);
   const [scoreData, setScoreData] = useState<any>(null);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   const { data: form, isLoading, error } = useQuery<Form>({
-    queryKey: ["/api/forms", id],
+    queryKey: [`/api/forms/${id}`],
     enabled: !!id,
   });
 
   const submitResponseMutation = useMutation({
     mutationFn: async (responseData: InsertResponse) => {
-      return apiRequest("POST", `/api/forms/${id}/responses`, responseData);
+      return apiRequest("POST", `/api/form-responses?formId=${id}`, responseData);
     },
     onSuccess: (data: any) => {
       setScoreData(data.score);
@@ -44,6 +48,56 @@ export default function FormFill() {
     },
   });
 
+  // Auto-save functionality
+  const saveToLocalStorage = useCallback((responses: Record<string, any>) => {
+    if (!id) return;
+    localStorage.setItem(`form-draft-${id}`, JSON.stringify({
+      responses,
+      timestamp: new Date().toISOString()
+    }));
+    setLastSaved(new Date());
+    setAutoSaveStatus('saved');
+  }, [id]);
+
+  const loadFromLocalStorage = useCallback(() => {
+    if (!id) return {};
+    try {
+      const saved = localStorage.getItem(`form-draft-${id}`);
+      if (saved) {
+        const { responses, timestamp } = JSON.parse(saved);
+        setLastSaved(new Date(timestamp));
+        return responses;
+      }
+    } catch (error) {
+      console.error('Failed to load saved responses:', error);
+    }
+    return {};
+  }, [id]);
+
+  // Load saved responses on mount
+  useEffect(() => {
+    const savedResponses = loadFromLocalStorage();
+    if (Object.keys(savedResponses).length > 0) {
+      setResponses(savedResponses);
+      toast({
+        title: "Draft restored",
+        description: "Your previous responses have been restored.",
+      });
+    }
+  }, [loadFromLocalStorage, toast]);
+
+  // Auto-save responses when they change
+  useEffect(() => {
+    if (Object.keys(responses).length === 0) return;
+
+    setAutoSaveStatus('saving');
+    const timeoutId = setTimeout(() => {
+      saveToLocalStorage(responses);
+    }, 1000); // Save after 1 second of inactivity
+
+    return () => clearTimeout(timeoutId);
+  }, [responses, saveToLocalStorage]);
+
   const updateResponse = (questionId: string, response: any) => {
     setResponses(prev => ({
       ...prev,
@@ -58,6 +112,11 @@ export default function FormFill() {
       formId: form.id,
       answers: responses,
     };
+
+    // Clear the draft when submitting
+    if (id) {
+      localStorage.removeItem(`form-draft-${id}`);
+    }
 
     submitResponseMutation.mutate(responseData);
   };
@@ -100,6 +159,22 @@ export default function FormFill() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      {/* Auto-save Status */}
+      <div className="fixed top-4 right-4 z-10">
+        {autoSaveStatus === 'saving' && (
+          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-200">
+            <Clock className="w-3 h-3 mr-1" />
+            Saving...
+          </Badge>
+        )}
+        {autoSaveStatus === 'saved' && lastSaved && (
+          <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Saved {new Date(lastSaved).toLocaleTimeString()}
+          </Badge>
+        )}
+      </div>
+
       {/* Form Header */}
       <div className="bg-white border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-6 py-8">

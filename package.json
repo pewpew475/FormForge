@@ -19,6 +19,7 @@
     "test-db": "node scripts/test-db.js",
     "test-storage": "node scripts/test-storage.js",
     "test-upload": "node scripts/test-upload-with-image.js",
+    "test-flow": "node scripts/test-complete-flow.js",
     "vercel-build": "npm run build"
   },
   "dependencies": {

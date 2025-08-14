@@ -9,6 +9,7 @@ import { useFormBuilder } from "@/hooks/use-form-builder";
 import { QuestionSidebar } from "@/components/form-builder/question-sidebar";
 import { QuestionEditor } from "@/components/form-builder/question-editor";
 import { FormPreview } from "@/components/form-builder/form-preview";
+import { PublishModal } from "@/components/form-builder/publish-modal";
 import { FileUpload } from "@/components/ui/file-upload";
 import { Link } from "wouter";
 import { Save, Eye, ArrowLeft, Plus, Share, Settings, CheckCircle } from "lucide-react";
@@ -17,6 +18,7 @@ export default function FormBuilder() {
   const { id } = useParams<{ id?: string }>();
   const [showPreview, setShowPreview] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
   const {
     form,
     isLoading,
@@ -242,11 +244,17 @@ export default function FormBuilder() {
                   <CheckCircle className="w-4 h-4 text-green-500" />
                   <span className="text-sm text-slate-600">Auto-saved</span>
                 </div>
-                <Button 
+                <Button
                   className={`${form.isPublished ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-500 hover:bg-green-600'} text-white`}
                   onClick={() => {
-                    updateForm({ isPublished: !form.isPublished });
-                    saveForm();
+                    if (!form.isPublished) {
+                      updateForm({ isPublished: true });
+                      saveForm();
+                      setShowPublishModal(true);
+                    } else {
+                      updateForm({ isPublished: false });
+                      saveForm();
+                    }
                   }}
                   data-testid="button-toggle-publish"
                 >
@@ -260,9 +268,21 @@ export default function FormBuilder() {
 
       {/* Preview Modal */}
       {showPreview && (
-        <FormPreview 
-          form={form} 
-          onClose={() => setShowPreview(false)} 
+        <FormPreview
+          form={form}
+          onClose={() => setShowPreview(false)}
+        />
+      )}
+
+      {/* Publish Modal */}
+      {showPublishModal && form.isPublished && (
+        <PublishModal
+          form={form}
+          onClose={() => setShowPublishModal(false)}
+          onViewResponses={() => {
+            setShowPublishModal(false);
+            window.location.href = `/responses/${form.id}`;
+          }}
         />
       )}
     </div>

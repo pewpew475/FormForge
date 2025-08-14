@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { Plus, Eye, Edit, Trash2 } from "lucide-react";
+import { Plus, Eye, Edit, Trash2, BarChart3 } from "lucide-react";
 import type { Form } from "@shared/schema";
 
 export default function Home() {
@@ -86,9 +86,16 @@ export default function Home() {
                           <Edit className="w-4 h-4" />
                         </Button>
                       </Link>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
+                      {form.isPublished && (
+                        <Link href={`/responses/${form.id}`}>
+                          <Button variant="outline" size="sm" data-testid={`button-view-responses-${form.id}`}>
+                            <BarChart3 className="w-4 h-4" />
+                          </Button>
+                        </Link>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
                         className="text-red-600 hover:text-red-700"
                         data-testid={`button-delete-form-${form.id}`}
                       >

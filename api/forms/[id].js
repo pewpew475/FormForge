@@ -30,13 +30,25 @@ export default async function handler(req, res) {
         }
         throw error;
       }
-      
-      res.status(200).json(form);
+
+      // Map snake_case to camelCase for frontend compatibility
+      const mappedForm = {
+        id: form.id,
+        title: form.title,
+        description: form.description,
+        headerImage: form.header_image,
+        questions: form.questions || [],
+        isPublished: form.is_published,
+        createdAt: form.created_at,
+        updatedAt: form.updated_at
+      };
+
+      res.status(200).json(mappedForm);
 
     } else if (req.method === 'PUT') {
       // Update form
       const formData = req.body;
-      
+
       const { data: form, error } = await supabase
         .from('forms')
         .update({
@@ -57,8 +69,20 @@ export default async function handler(req, res) {
         }
         throw error;
       }
-      
-      res.status(200).json(form);
+
+      // Map snake_case to camelCase for frontend compatibility
+      const mappedForm = {
+        id: form.id,
+        title: form.title,
+        description: form.description,
+        headerImage: form.header_image,
+        questions: form.questions || [],
+        isPublished: form.is_published,
+        createdAt: form.created_at,
+        updatedAt: form.updated_at
+      };
+
+      res.status(200).json(mappedForm);
 
     } else if (req.method === 'DELETE') {
       // Delete form

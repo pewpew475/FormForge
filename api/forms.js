@@ -30,7 +30,19 @@ export default async function handler(req, res) {
           return res.status(404).json({ error: 'Form not found' });
         }
 
-        res.status(200).json(forms[0]);
+        // Map snake_case to camelCase for frontend compatibility
+        const mappedForm = {
+          id: forms[0].id,
+          title: forms[0].title,
+          description: forms[0].description,
+          headerImage: forms[0].header_image,
+          questions: forms[0].questions || [],
+          isPublished: forms[0].is_published,
+          createdAt: forms[0].created_at,
+          updatedAt: forms[0].updated_at
+        };
+
+        res.status(200).json(mappedForm);
       } else {
         // Get all forms
         const { data: forms, error } = await supabase
@@ -40,7 +52,19 @@ export default async function handler(req, res) {
 
         if (error) throw error;
 
-        res.status(200).json(forms || []);
+        // Map snake_case to camelCase for frontend compatibility
+        const mappedForms = (forms || []).map(form => ({
+          id: form.id,
+          title: form.title,
+          description: form.description,
+          headerImage: form.header_image,
+          questions: form.questions || [],
+          isPublished: form.is_published,
+          createdAt: form.created_at,
+          updatedAt: form.updated_at
+        }));
+
+        res.status(200).json(mappedForms);
       }
       
     } else if (req.method === 'POST') {
@@ -61,7 +85,19 @@ export default async function handler(req, res) {
 
       if (error) throw error;
 
-      res.status(201).json(form);
+      // Map snake_case to camelCase for frontend compatibility
+      const mappedForm = {
+        id: form.id,
+        title: form.title,
+        description: form.description,
+        headerImage: form.header_image,
+        questions: form.questions || [],
+        isPublished: form.is_published,
+        createdAt: form.created_at,
+        updatedAt: form.updated_at
+      };
+
+      res.status(201).json(mappedForm);
 
     } else if (req.method === 'PUT') {
       // Update form
@@ -92,7 +128,19 @@ export default async function handler(req, res) {
         throw error;
       }
 
-      res.status(200).json(form);
+      // Map snake_case to camelCase for frontend compatibility
+      const mappedForm = {
+        id: form.id,
+        title: form.title,
+        description: form.description,
+        headerImage: form.header_image,
+        questions: form.questions || [],
+        isPublished: form.is_published,
+        createdAt: form.created_at,
+        updatedAt: form.updated_at
+      };
+
+      res.status(200).json(mappedForm);
 
     } else {
       res.status(405).json({ error: 'Method not allowed' });

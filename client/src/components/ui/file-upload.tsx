@@ -138,14 +138,13 @@ export function FileUpload({ onUpload, currentImage, onRemove, className, accept
         className="hidden"
         data-testid="input-file"
       />
-      
       {isUploading ? (
         <div className="flex flex-col items-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-2"></div>
           <p className="text-sm text-slate-600">Uploading...</p>
         </div>
       ) : (
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center ml-[0px] mr-[0px] mt-[-18px] mb-[-18px]">
           <ImageIcon className="w-8 h-8 text-slate-400 mb-2" />
           <p className="text-sm text-slate-600">Click to upload or drag and drop</p>
           <p className="text-xs text-slate-500 mt-1">PNG, JPG, GIF up to 10MB</p>

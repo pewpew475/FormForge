@@ -2,6 +2,15 @@
 
 A comprehensive form builder application with custom question types, real-time scoring, and image support. Built with React, Express.js, PostgreSQL, and ready for Vercel deployment with Supabase integration.
 
+## 🚀 Production Ready
+
+This application is optimized for production deployment with:
+- **Vercel Integration**: Optimized build configuration and serverless functions
+- **Supabase Backend**: PostgreSQL database and file storage
+- **Health Monitoring**: Built-in health check endpoints
+- **Security**: Production middleware including CORS, Helmet, and compression
+- **Performance**: Optimized builds, caching, and connection pooling
+
 ## Features
 
 - **Three Custom Question Types:**
@@ -138,6 +147,47 @@ npm run db:push
 - `GET /api/forms/:id/responses` - Get form responses
 - `POST /api/upload` - Upload images
 
+## 🚀 Production Deployment
+
+### 🚀 One-Click Setup & Deploy
+
+1. **Quick Setup:**
+   ```bash
+   git clone <your-repo-url>
+   cd FormForge
+   npm install
+   npm run setup  # Interactive setup wizard
+   ```
+
+2. **Deploy to Vercel:**
+   - Connect your repository to Vercel
+   - Copy environment variables from the setup output
+   - Deploy!
+
+3. **Alternative: Manual Setup:**
+   - Create a new Supabase project
+   - Get your database URL and API keys
+   - Run `npm run db:deploy` to set up the schema
+
+3. **Environment Variables:**
+   ```
+   NODE_ENV=production
+   DATABASE_URL=your-supabase-connection-string
+   SUPABASE_URL=your-supabase-project-url
+   SUPABASE_ANON_KEY=your-supabase-anon-key
+   SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+   SUPABASE_STORAGE_BUCKET=form-images
+   FRONTEND_URL=https://your-app.vercel.app
+   ```
+
+For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+
+### Health Monitoring
+
+- `GET /api/health` - Application health status
+- `GET /api/health/ready` - Readiness probe
+- `GET /api/health/live` - Liveness probe
+
 ## Development Notes
 
 - Images are stored as data URLs in development
@@ -145,6 +195,16 @@ npm run db:push
 - Database uses PostgreSQL with Drizzle ORM
 - TypeScript for full type safety
 - Tailwind CSS for styling
+- Production middleware includes security headers, compression, and CORS
+
+## Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run db:generate` - Generate database migrations
+- `npm run db:deploy` - Deploy schema to Supabase
+- `npm run check` - TypeScript type checking
 
 ## License
 

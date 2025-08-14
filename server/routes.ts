@@ -1,10 +1,68 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertFormSchema, insertResponseSchema } from "@shared/schema";
+import { insertFormSchema, insertResponseSchema, forms } from "@shared/schema";
 import { z } from "zod";
+import { getDb } from "./db";
+import { getSupabase } from "./supabase";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoints
+  app.get("/api/health", async (req, res) => {
+    try {
+      // Check database connection using Supabase client
+      const supabase = getSupabase();
+      const { data, error } = await supabase
+        .from('forms')
+        .select('count')
+        .limit(1);
+
+      if (error) {
+        throw error;
+      }
+
+      res.json({
+        status: "healthy",
+        timestamp: new Date().toISOString(),
+        version: process.env.npm_package_version || "1.0.0"
+      });
+    } catch (error) {
+      console.error('Health check error:', error);
+      res.status(503).json({
+        status: "unhealthy",
+        timestamp: new Date().toISOString(),
+        error: "Database connection failed"
+      });
+    }
+  });
+
+  app.get("/api/health/ready", async (req, res) => {
+    try {
+      // Check if all services are ready using Supabase client
+      const supabase = getSupabase();
+      const { data, error } = await supabase
+        .from('forms')
+        .select('count')
+        .limit(1);
+
+      if (error) {
+        throw error;
+      }
+
+      res.json({ status: "ready", timestamp: new Date().toISOString() });
+    } catch (error) {
+      res.status(503).json({
+        status: "not ready",
+        timestamp: new Date().toISOString(),
+        error: "Services not ready"
+      });
+    }
+  });
+
+  app.get("/api/health/live", (req, res) => {
+    // Simple liveness check
+    res.json({ status: "alive", timestamp: new Date().toISOString() });
+  });
   // Forms API
   app.get("/api/forms", async (req, res) => {
     try {

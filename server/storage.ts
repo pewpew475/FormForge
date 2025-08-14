@@ -1,5 +1,5 @@
 import { type Form, type InsertForm, type Response, type InsertResponse, forms, responses } from "@shared/schema";
-import { db } from "./db";
+import { getDb } from "./db";
 import { eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
@@ -15,6 +15,7 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async createForm(insertForm: InsertForm): Promise<Form> {
+    const db = getDb();
     const [form] = await db
       .insert(forms)
       .values({
@@ -29,11 +30,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getForm(id: string): Promise<Form | undefined> {
+    const db = getDb();
     const [form] = await db.select().from(forms).where(eq(forms.id, id));
     return form as Form | undefined;
   }
 
   async updateForm(id: string, updateData: Partial<InsertForm>): Promise<Form | undefined> {
+    const db = getDb();
     const [form] = await db
       .update(forms)
       .set({
@@ -46,16 +49,19 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteForm(id: string): Promise<boolean> {
+    const db = getDb();
     const result = await db.delete(forms).where(eq(forms.id, id));
     return result.rowCount ? result.rowCount > 0 : false;
   }
 
   async getForms(): Promise<Form[]> {
+    const db = getDb();
     const allForms = await db.select().from(forms).orderBy(forms.createdAt);
     return allForms as Form[];
   }
 
   async createResponse(insertResponse: InsertResponse): Promise<Response> {
+    const db = getDb();
     const [response] = await db
       .insert(responses)
       .values(insertResponse)
@@ -64,6 +70,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getResponses(formId: string): Promise<Response[]> {
+    const db = getDb();
     const formResponses = await db
       .select()
       .from(responses)

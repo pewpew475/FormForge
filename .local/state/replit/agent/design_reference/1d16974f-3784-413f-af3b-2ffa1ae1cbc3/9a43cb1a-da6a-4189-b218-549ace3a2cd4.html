@@ -1,0 +1,655 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FormCraft - Custom Form Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#6366F1',
+                        secondary: '#8B5CF6',
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-50 font-inter">
+    <!-- @COMPONENT: Navigation -->
+    <nav class="bg-white border-b border-slate-200 px-6 py-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                        <i class="fas fa-cube text-white text-sm"></i>
+                    </div>
+                    <span class="text-xl font-bold text-slate-800" data-mock="true">FormCraft</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-6 ml-8">
+                    <a href="#" class="text-slate-600 hover:text-slate-800 transition-colors">Dashboard</a>
+                    <a href="#" class="text-primary font-medium">Form Builder</a>
+                    <a href="#" class="text-slate-600 hover:text-slate-800 transition-colors">Analytics</a>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors" data-event="click:saveForm">
+                    <i class="fas fa-save mr-2"></i>Save Form
+                </button>
+                <button class="bg-secondary text-white px-4 py-2 rounded-lg hover:bg-violet-600 transition-colors" data-event="click:previewForm">
+                    <i class="fas fa-eye mr-2"></i>Preview
+                </button>
+                <div class="w-8 h-8 bg-slate-300 rounded-full"></div>
+            </div>
+        </div>
+    </nav>
+    <!-- @END_COMPONENT: Navigation -->
+
+    <div class="flex h-screen">
+        <!-- @COMPONENT: Sidebar -->
+        <div class="w-80 bg-white border-r border-slate-200 flex flex-col">
+            <!-- Form Settings Panel -->
+            <div class="p-6 border-b border-slate-200">
+                <h2 class="text-lg font-semibold text-slate-800 mb-4">Form Settings</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Form Title</label>
+                        <input type="text" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" 
+                               value="Untitled Form" data-bind="form.title" data-mock="true">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Description</label>
+                        <textarea class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent h-20" 
+                                  placeholder="Add form description..." data-bind="form.description"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Header Image</label>
+                        <div class="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:border-primary transition-colors cursor-pointer" data-implementation="FileUpload component for header image">
+                            <i class="fas fa-image text-2xl text-slate-400 mb-2"></i>
+                            <p class="text-sm text-slate-600">Click to upload header image</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question Types Panel -->
+            <div class="p-6 flex-1">
+                <h3 class="text-lg font-semibold text-slate-800 mb-4">Question Types</h3>
+                <div class="space-y-3">
+                    <!-- @FUNCTIONALITY: Drag-and-drop question type components -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 cursor-pointer hover:bg-slate-100 transition-colors" data-draggable="true" data-question-type="categorize">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-layer-group text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-slate-800">Categorize</h4>
+                                <p class="text-sm text-slate-600">Drag items into categories</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 cursor-pointer hover:bg-slate-100 transition-colors" data-draggable="true" data-question-type="cloze">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-fill-drip text-green-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-slate-800">Cloze</h4>
+                                <p class="text-sm text-slate-600">Fill in the blanks</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 cursor-pointer hover:bg-slate-100 transition-colors" data-draggable="true" data-question-type="comprehension">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-book-open text-purple-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-slate-800">Comprehension</h4>
+                                <p class="text-sm text-slate-600">Reading comprehension questions</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- @COMPONENT: MainEditor -->
+        <div class="flex-1 flex flex-col">
+            <!-- Form Builder Area -->
+            <div class="flex-1 p-8 overflow-y-auto">
+                <div class="max-w-4xl mx-auto">
+                    <!-- Form Header -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6">
+                        <div class="h-32 bg-gradient-to-r from-primary to-secondary rounded-t-xl"></div>
+                        <div class="p-8">
+                            <h1 class="text-3xl font-bold text-slate-800 mb-2" data-bind="form.title" data-mock="true">Untitled Form</h1>
+                            <p class="text-slate-600" data-bind="form.description" data-mock="true">Add your form description here...</p>
+                        </div>
+                    </div>
+
+                    <!-- Questions Container -->
+                    <div class="space-y-6" id="questions-container">
+                        <!-- @MAP: questions.map(question => ( -->
+                        
+                        <!-- Sample Categorize Question -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6" data-question-id="1" data-question-type="categorize">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-layer-group text-blue-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-slate-800">Question 1 - Categorize</h3>
+                                        <p class="text-sm text-slate-600">Drag and drop question</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button class="p-2 text-slate-400 hover:text-slate-600" data-event="click:editQuestion">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="p-2 text-slate-400 hover:text-red-500" data-event="click:deleteQuestion">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <input type="text" class="w-full text-lg font-medium border-none outline-none bg-transparent" 
+                                       placeholder="Enter your question here..." 
+                                       value="Categorize these programming languages by their primary use case" data-mock="true">
+                            </div>
+
+                            <!-- Image Upload for Question -->
+                            <div class="mb-6">
+                                <div class="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors cursor-pointer" data-implementation="Question image upload">
+                                    <i class="fas fa-image text-xl text-slate-400 mb-2"></i>
+                                    <p class="text-sm text-slate-600">Add image to question (optional)</p>
+                                </div>
+                            </div>
+
+                            <!-- Categorize Interface -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="font-medium text-slate-700 mb-3">Items to categorize:</h4>
+                                    <div class="space-y-2">
+                                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 cursor-move" data-mock="true">JavaScript</div>
+                                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 cursor-move" data-mock="true">Python</div>
+                                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 cursor-move" data-mock="true">SQL</div>
+                                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 cursor-move" data-mock="true">HTML</div>
+                                    </div>
+                                    <button class="mt-3 text-sm text-primary hover:text-indigo-600" data-event="click:addItem">
+                                        <i class="fas fa-plus mr-1"></i>Add Item
+                                    </button>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-slate-700 mb-3">Categories:</h4>
+                                    <div class="space-y-3">
+                                        <div class="border-2 border-dashed border-slate-300 rounded-lg p-4 min-h-20">
+                                            <div class="text-sm font-medium text-slate-600 mb-2" data-mock="true">Web Development</div>
+                                            <div class="text-xs text-slate-500">Drop items here</div>
+                                        </div>
+                                        <div class="border-2 border-dashed border-slate-300 rounded-lg p-4 min-h-20">
+                                            <div class="text-sm font-medium text-slate-600 mb-2" data-mock="true">Data Science</div>
+                                            <div class="text-xs text-slate-500">Drop items here</div>
+                                        </div>
+                                        <div class="border-2 border-dashed border-slate-300 rounded-lg p-4 min-h-20">
+                                            <div class="text-sm font-medium text-slate-600 mb-2" data-mock="true">Database</div>
+                                            <div class="text-xs text-slate-500">Drop items here</div>
+                                        </div>
+                                    </div>
+                                    <button class="mt-3 text-sm text-primary hover:text-indigo-600" data-event="click:addCategory">
+                                        <i class="fas fa-plus mr-1"></i>Add Category
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sample Cloze Question -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6" data-question-id="2" data-question-type="cloze">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-fill-drip text-green-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-slate-800">Question 2 - Cloze</h3>
+                                        <p class="text-sm text-slate-600">Fill in the blanks</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button class="p-2 text-slate-400 hover:text-slate-600" data-event="click:editQuestion">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="p-2 text-slate-400 hover:text-red-500" data-event="click:deleteQuestion">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <input type="text" class="w-full text-lg font-medium border-none outline-none bg-transparent" 
+                                       placeholder="Enter your question here..." 
+                                       value="Complete the sentence about web development" data-mock="true">
+                            </div>
+
+                            <!-- Cloze Text Editor -->
+                            <div class="mb-6">
+                                <div class="border border-slate-300 rounded-lg p-4 min-h-32 bg-slate-50">
+                                    <p class="text-slate-700 leading-relaxed" data-mock="true">
+                                        React is a JavaScript <span class="bg-yellow-200 px-2 py-1 rounded border-2 border-dashed border-yellow-400 cursor-pointer">[library]</span> 
+                                        for building <span class="bg-yellow-200 px-2 py-1 rounded border-2 border-dashed border-yellow-400 cursor-pointer">[user interfaces]</span>. 
+                                        It was developed by <span class="bg-yellow-200 px-2 py-1 rounded border-2 border-dashed border-yellow-400 cursor-pointer">[Facebook]</span> 
+                                        and is now maintained by Meta and the open-source community.
+                                    </p>
+                                </div>
+                                <p class="text-sm text-slate-600 mt-2">Click on text to create blanks, or select text and click "Create Blank"</p>
+                            </div>
+
+                            <!-- Answer Options -->
+                            <div class="border border-slate-200 rounded-lg p-4">
+                                <h4 class="font-medium text-slate-700 mb-3">Answer Options:</h4>
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center cursor-move" data-mock="true">library</div>
+                                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center cursor-move" data-mock="true">user interfaces</div>
+                                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center cursor-move" data-mock="true">Facebook</div>
+                                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center cursor-move" data-mock="true">framework</div>
+                                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center cursor-move" data-mock="true">Google</div>
+                                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center cursor-move" data-mock="true">components</div>
+                                </div>
+                                <button class="mt-3 text-sm text-primary hover:text-indigo-600" data-event="click:addOption">
+                                    <i class="fas fa-plus mr-1"></i>Add Option
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Sample Comprehension Question -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6" data-question-id="3" data-question-type="comprehension">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-book-open text-purple-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-slate-800">Question 3 - Comprehension</h3>
+                                        <p class="text-sm text-slate-600">Reading comprehension</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button class="p-2 text-slate-400 hover:text-slate-600" data-event="click:editQuestion">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="p-2 text-slate-400 hover:text-red-500" data-event="click:deleteQuestion">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Passage -->
+                            <div class="mb-6">
+                                <h4 class="font-medium text-slate-700 mb-3">Reading Passage:</h4>
+                                <div class="border border-slate-300 rounded-lg p-4 bg-slate-50">
+                                    <textarea class="w-full h-40 border-none outline-none bg-transparent resize-none" 
+                                              placeholder="Enter the reading passage here..." data-bind="question.passage" data-mock="true">Artificial Intelligence (AI) has revolutionized numerous industries, from healthcare to finance. Machine learning algorithms can now analyze vast amounts of data to identify patterns that would be impossible for humans to detect. This capability has led to breakthroughs in medical diagnosis, where AI systems can identify diseases from medical images with accuracy that sometimes exceeds that of experienced doctors.
+
+However, the implementation of AI also raises important ethical questions. As AI systems become more sophisticated, concerns about job displacement, privacy, and algorithmic bias have become more prominent. It is crucial for society to develop frameworks that ensure AI is developed and deployed responsibly.</textarea>
+                                </div>
+                            </div>
+
+                            <!-- Sub-questions -->
+                            <div class="space-y-4">
+                                <h4 class="font-medium text-slate-700">Questions based on the passage:</h4>
+                                
+                                <div class="border border-slate-200 rounded-lg p-4">
+                                    <div class="mb-3">
+                                        <input type="text" class="w-full font-medium border-none outline-none bg-transparent" 
+                                               placeholder="Enter question..." 
+                                               value="What are the main benefits of AI mentioned in the passage?" data-mock="true">
+                                    </div>
+                                    <div class="space-y-2">
+                                        <div class="flex items-center space-x-3">
+                                            <input type="radio" name="q3_1" class="text-primary focus:ring-primary">
+                                            <input type="text" class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm" 
+                                                   placeholder="Option A" value="Pattern recognition and medical diagnosis" data-mock="true">
+                                            <button class="text-red-500 hover:text-red-700" data-event="click:removeOption">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <input type="radio" name="q3_1" class="text-primary focus:ring-primary">
+                                            <input type="text" class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm" 
+                                                   placeholder="Option B" value="Job creation and increased productivity" data-mock="true">
+                                            <button class="text-red-500 hover:text-red-700" data-event="click:removeOption">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <input type="radio" name="q3_1" class="text-primary focus:ring-primary">
+                                            <input type="text" class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm" 
+                                                   placeholder="Option C" value="Lower costs and faster processing" data-mock="true">
+                                            <button class="text-red-500 hover:text-red-700" data-event="click:removeOption">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <button class="text-sm text-primary hover:text-indigo-600" data-event="click:addOption">
+                                            <i class="fas fa-plus mr-1"></i>Add Option
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="border border-slate-200 rounded-lg p-4">
+                                    <div class="mb-3">
+                                        <input type="text" class="w-full font-medium border-none outline-none bg-transparent" 
+                                               placeholder="Enter question..." 
+                                               value="According to the passage, what ethical concerns does AI raise?" data-mock="true">
+                                    </div>
+                                    <div class="space-y-2">
+                                        <div class="flex items-center space-x-3">
+                                            <input type="radio" name="q3_2" class="text-primary focus:ring-primary">
+                                            <input type="text" class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm" 
+                                                   placeholder="Option A" value="Job displacement, privacy, and algorithmic bias" data-mock="true">
+                                            <button class="text-red-500 hover:text-red-700" data-event="click:removeOption">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <input type="radio" name="q3_2" class="text-primary focus:ring-primary">
+                                            <input type="text" class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm" 
+                                                   placeholder="Option B" value="High implementation costs" data-mock="true">
+                                            <button class="text-red-500 hover:text-red-700" data-event="click:removeOption">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <button class="text-sm text-primary hover:text-indigo-600" data-event="click:addOption">
+                                            <i class="fas fa-plus mr-1"></i>Add Option
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <button class="text-sm text-purple-600 hover:text-purple-700" data-event="click:addSubQuestion">
+                                    <i class="fas fa-plus mr-1"></i>Add Sub-question
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- @END_MAP )) -->
+
+                        <!-- Add Question Button -->
+                        <div class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-primary transition-colors cursor-pointer" data-event="click:showQuestionTypes">
+                            <i class="fas fa-plus text-2xl text-slate-400 mb-3"></i>
+                            <p class="text-lg font-medium text-slate-600">Add a new question</p>
+                            <p class="text-sm text-slate-500">Choose from Categorize, Cloze, or Comprehension</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Actions -->
+            <div class="bg-white border-t border-slate-200 px-8 py-4">
+                <div class="max-w-4xl mx-auto flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-slate-600" data-bind="questionCount" data-mock="true">3 questions</span>
+                        <span class="text-sm text-slate-400">•</span>
+                        <span class="text-sm text-slate-600" data-mock="true">Last saved 2 minutes ago</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button class="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors" data-event="click:saveDraft">
+                            Save as Draft
+                        </button>
+                        <button class="bg-secondary text-white px-6 py-2 rounded-lg hover:bg-violet-600 transition-colors" data-event="click:publishForm">
+                            Publish Form
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: MainEditor -->
+    </div>
+
+    <!-- @COMPONENT: PreviewModal -->
+    <div id="preview-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50" data-event="click:closePreview">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-screen overflow-hidden" onclick="event.stopPropagation()">
+                <!-- Modal Header -->
+                <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <i class="fas fa-eye text-slate-600"></i>
+                        <h3 class="text-lg font-semibold text-slate-800">Form Preview</h3>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors text-sm" data-event="click:copyFormLink">
+                            <i class="fas fa-link mr-2"></i>Copy Link
+                        </button>
+                        <button class="text-slate-400 hover:text-slate-600 text-xl" data-event="click:closePreview">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Form Preview Content -->
+                <div class="overflow-y-auto max-h-[80vh]">
+                    <div class="p-8">
+                        <!-- Form Header Preview -->
+                        <div class="text-center mb-8">
+                            <div class="h-32 bg-gradient-to-r from-primary to-secondary rounded-xl mb-6"></div>
+                            <h1 class="text-3xl font-bold text-slate-800 mb-3" data-bind="form.title" data-mock="true">Untitled Form</h1>
+                            <p class="text-slate-600 max-w-2xl mx-auto" data-bind="form.description" data-mock="true">This is a preview of how your form will appear to respondents. You can test the interactions and see the final layout.</p>
+                        </div>
+
+                        <!-- Preview Questions -->
+                        <div class="space-y-8 max-w-3xl mx-auto">
+                            <!-- Categorize Question Preview -->
+                            <div class="bg-white border border-slate-200 rounded-xl p-6">
+                                <h3 class="text-xl font-semibold text-slate-800 mb-4" data-mock="true">1. Categorize these programming languages by their primary use case</h3>
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <div>
+                                        <h4 class="font-medium text-slate-700 mb-3">Drag these items:</h4>
+                                        <div class="space-y-2">
+                                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 cursor-move hover:bg-blue-100 transition-colors" data-mock="true">JavaScript</div>
+                                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 cursor-move hover:bg-blue-100 transition-colors" data-mock="true">Python</div>
+                                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 cursor-move hover:bg-blue-100 transition-colors" data-mock="true">SQL</div>
+                                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 cursor-move hover:bg-blue-100 transition-colors" data-mock="true">HTML</div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-slate-700 mb-3">Into these categories:</h4>
+                                        <div class="space-y-3">
+                                            <div class="border-2 border-dashed border-slate-300 rounded-lg p-4 min-h-16 bg-slate-50">
+                                                <div class="font-medium text-slate-600" data-mock="true">Web Development</div>
+                                            </div>
+                                            <div class="border-2 border-dashed border-slate-300 rounded-lg p-4 min-h-16 bg-slate-50">
+                                                <div class="font-medium text-slate-600" data-mock="true">Data Science</div>
+                                            </div>
+                                            <div class="border-2 border-dashed border-slate-300 rounded-lg p-4 min-h-16 bg-slate-50">
+                                                <div class="font-medium text-slate-600" data-mock="true">Database</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cloze Question Preview -->
+                            <div class="bg-white border border-slate-200 rounded-xl p-6">
+                                <h3 class="text-xl font-semibold text-slate-800 mb-4" data-mock="true">2. Complete the sentence about web development</h3>
+                                <div class="mb-6">
+                                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                                        <p class="text-slate-700 leading-relaxed" data-mock="true">
+                                            React is a JavaScript <select class="bg-white border border-slate-300 rounded px-2 py-1 mx-1">
+                                                <option>Select...</option>
+                                                <option>library</option>
+                                                <option>framework</option>
+                                            </select> 
+                                            for building <select class="bg-white border border-slate-300 rounded px-2 py-1 mx-1">
+                                                <option>Select...</option>
+                                                <option>user interfaces</option>
+                                                <option>components</option>
+                                            </select>. 
+                                            It was developed by <select class="bg-white border border-slate-300 rounded px-2 py-1 mx-1">
+                                                <option>Select...</option>
+                                                <option>Facebook</option>
+                                                <option>Google</option>
+                                            </select> 
+                                            and is now maintained by Meta and the open-source community.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Comprehension Question Preview -->
+                            <div class="bg-white border border-slate-200 rounded-xl p-6">
+                                <h3 class="text-xl font-semibold text-slate-800 mb-4" data-mock="true">3. Reading Comprehension</h3>
+                                <div class="mb-6">
+                                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                                        <p class="text-slate-700 leading-relaxed" data-mock="true">
+                                            Artificial Intelligence (AI) has revolutionized numerous industries, from healthcare to finance. Machine learning algorithms can now analyze vast amounts of data to identify patterns that would be impossible for humans to detect. This capability has led to breakthroughs in medical diagnosis, where AI systems can identify diseases from medical images with accuracy that sometimes exceeds that of experienced doctors.
+                                        </p>
+                                        <br>
+                                        <p class="text-slate-700 leading-relaxed" data-mock="true">
+                                            However, the implementation of AI also raises important ethical questions. As AI systems become more sophisticated, concerns about job displacement, privacy, and algorithmic bias have become more prominent. It is crucial for society to develop frameworks that ensure AI is developed and deployed responsibly.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-6">
+                                    <div>
+                                        <h4 class="font-medium text-slate-700 mb-3" data-mock="true">What are the main benefits of AI mentioned in the passage?</h4>
+                                        <div class="space-y-2">
+                                            <label class="flex items-center space-x-3 cursor-pointer hover:bg-slate-50 p-2 rounded-lg">
+                                                <input type="radio" name="q3_1_preview" class="text-primary focus:ring-primary">
+                                                <span data-mock="true">Pattern recognition and medical diagnosis</span>
+                                            </label>
+                                            <label class="flex items-center space-x-3 cursor-pointer hover:bg-slate-50 p-2 rounded-lg">
+                                                <input type="radio" name="q3_1_preview" class="text-primary focus:ring-primary">
+                                                <span data-mock="true">Job creation and increased productivity</span>
+                                            </label>
+                                            <label class="flex items-center space-x-3 cursor-pointer hover:bg-slate-50 p-2 rounded-lg">
+                                                <input type="radio" name="q3_1_preview" class="text-primary focus:ring-primary">
+                                                <span data-mock="true">Lower costs and faster processing</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h4 class="font-medium text-slate-700 mb-3" data-mock="true">According to the passage, what ethical concerns does AI raise?</h4>
+                                        <div class="space-y-2">
+                                            <label class="flex items-center space-x-3 cursor-pointer hover:bg-slate-50 p-2 rounded-lg">
+                                                <input type="radio" name="q3_2_preview" class="text-primary focus:ring-primary">
+                                                <span data-mock="true">Job displacement, privacy, and algorithmic bias</span>
+                                            </label>
+                                            <label class="flex items-center space-x-3 cursor-pointer hover:bg-slate-50 p-2 rounded-lg">
+                                                <input type="radio" name="q3_2_preview" class="text-primary focus:ring-primary">
+                                                <span data-mock="true">High implementation costs</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="text-center mt-8">
+                            <button class="bg-primary text-white px-8 py-3 rounded-lg hover:bg-indigo-600 transition-colors text-lg" data-event="click:submitForm">
+                                Submit Form
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: PreviewModal -->
+
+    <script>
+        (function() {
+            // TODO: Implement drag and drop functionality for form builder
+            // TODO: Implement form state management
+            // TODO: Implement API calls for saving/loading forms
+            // TODO: Implement file upload for images
+            // TODO: Implement form validation
+            // TODO: Implement response collection
+
+            // Basic UI interactions
+            const previewModal = document.getElementById('preview-modal');
+            
+            // Preview button functionality
+            document.querySelector('[data-event="click:previewForm"]').addEventListener('click', function() {
+                previewModal.classList.remove('hidden');
+            });
+
+            // Close preview modal
+            document.querySelectorAll('[data-event="click:closePreview"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    previewModal.classList.add('hidden');
+                });
+            });
+
+            // Copy form link
+            document.querySelector('[data-event="click:copyFormLink"]').addEventListener('click', function() {
+                // TODO: Generate and copy actual form link
+                navigator.clipboard.writeText('https://formcraft.app/form/unique-id').then(() => {
+                    // TODO: Show success toast notification
+                    console.log('Form link copied to clipboard');
+                });
+            });
+
+            // Basic form interactions
+            document.addEventListener('click', function(e) {
+                const target = e.target.closest('[data-event]');
+                if (!target) return;
+
+                const event = target.getAttribute('data-event');
+                
+                switch(event) {
+                    case 'click:saveForm':
+                        // TODO: Implement form saving logic
+                        console.log('Saving form...');
+                        break;
+                    case 'click:publishForm':
+                        // TODO: Implement form publishing logic
+                        console.log('Publishing form...');
+                        break;
+                    case 'click:addItem':
+                        // TODO: Add new categorize item
+                        console.log('Adding new item...');
+                        break;
+                    case 'click:addCategory':
+                        // TODO: Add new category
+                        console.log('Adding new category...');
+                        break;
+                    case 'click:addOption':
+                        // TODO: Add new option to question
+                        console.log('Adding new option...');
+                        break;
+                    case 'click:editQuestion':
+                        // TODO: Open question editor
+                        console.log('Editing question...');
+                        break;
+                    case 'click:deleteQuestion':
+                        // TODO: Delete question with confirmation
+                        console.log('Deleting question...');
+                        break;
+                    default:
+                        console.log('Event:', event);
+                }
+            });
+
+            // TODO: Implement drag and drop for question reordering
+            // TODO: Implement drag and drop for categorize questions
+            // TODO: Implement cloze text selection and blank creation
+            // TODO: Implement real-time form preview updates
+            // TODO: Implement form validation
+            // TODO: Implement auto-save functionality
+        })();
+    </script>
+</body>
+</html>

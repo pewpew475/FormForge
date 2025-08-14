@@ -1,8 +1,44 @@
+// Load environment variables first
+import { config } from 'dotenv';
+config();
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import cors from "cors";
+import helmet from "helmet";
+import compression from "compression";
+import morgan from "morgan";
 
 const app = express();
+
+// Production middleware
+if (process.env.NODE_ENV === 'production') {
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'", "https:"],
+      },
+    },
+  }));
+  app.use(compression());
+  app.use(morgan('combined'));
+} else {
+  app.use(morgan('dev'));
+}
+
+// CORS configuration
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production'
+    ? [process.env.FRONTEND_URL || 'https://your-app.vercel.app']
+    : ['http://localhost:5000', 'http://localhost:3000'],
+  credentials: true,
+}));
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
@@ -61,11 +97,20 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
+  const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
+
+  server.on('error', (err: any) => {
+    if (err.code === 'EADDRINUSE') {
+      console.log(`Port ${port} is busy, trying port ${port + 1}...`);
+      server.listen(port + 1, host, () => {
+        log(`serving on ${host}:${port + 1}`);
+      });
+    } else {
+      throw err;
+    }
+  });
+
+  server.listen(port, host, () => {
+    log(`serving on ${host}:${port}`);
   });
 })();

@@ -17,7 +17,7 @@ export function useFormBuilder(formId?: string) {
   const queryClient = useQueryClient();
 
   const { data: form, isLoading } = useQuery<Form>({
-    queryKey: [`/api/forms?id=${formId}`],
+    queryKey: [`/api/forms/${formId}`],
     enabled: !!formId,
   });
 

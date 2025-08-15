@@ -19,6 +19,7 @@ export default function FormBuilder() {
   const [showPreview, setShowPreview] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
+  const [publishedForm, setPublishedForm] = useState<any>(null);
   const {
     form,
     isLoading,
@@ -253,22 +254,25 @@ export default function FormBuilder() {
 
                     if (!form.isPublished) {
                       try {
-                        // First update the form to published status
+                        // Save the form with published status
+                        const savedForm = await saveForm({ isPublished: true });
+
+                        // Update local state to reflect published status
                         updateForm({ isPublished: true });
 
-                        // Then save the form (this will handle both new and existing forms)
-                        const savedForm = await saveForm();
+                        // Set the published form for the modal
+                        setPublishedForm({ ...form, ...savedForm, isPublished: true });
 
                         // Show the publish modal after successful save
                         setShowPublishModal(true);
                       } catch (error) {
                         console.error('Failed to publish form:', error);
-                        // Revert the published status if save failed
+                        // Ensure form stays unpublished if save failed
                         updateForm({ isPublished: false });
                       }
                     } else {
                       updateForm({ isPublished: false });
-                      saveForm();
+                      saveForm({ isPublished: false });
                     }
                   }}
                   data-testid="button-toggle-publish"
@@ -290,13 +294,17 @@ export default function FormBuilder() {
       )}
 
       {/* Publish Modal */}
-      {showPublishModal && form.isPublished && (
+      {showPublishModal && publishedForm && (
         <PublishModal
-          form={form}
-          onClose={() => setShowPublishModal(false)}
+          form={publishedForm}
+          onClose={() => {
+            setShowPublishModal(false);
+            setPublishedForm(null);
+          }}
           onViewResponses={() => {
             setShowPublishModal(false);
-            window.location.href = `/responses/${form.id}`;
+            setPublishedForm(null);
+            window.location.href = `/responses/${publishedForm.id}`;
           }}
         />
       )}

@@ -151,13 +151,14 @@ export function useFormBuilder(formId?: string) {
     updateForm({ questions: updatedQuestions });
   }, [currentForm.questions, updateForm]);
 
-  const saveForm = useCallback(() => {
+  const saveForm = useCallback((overrides?: Partial<InsertForm>) => {
     const formData: InsertForm = {
       title: currentForm.title || "Untitled Form",
       description: currentForm.description || "",
       headerImage: currentForm.headerImage || "",
       questions: currentForm.questions || [],
       isPublished: currentForm.isPublished || false,
+      ...overrides, // Allow overriding any field
     };
     return saveFormMutation.mutateAsync(formData);
   }, [currentForm, saveFormMutation]);

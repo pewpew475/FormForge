@@ -73,10 +73,11 @@ export function useFormBuilder(formId?: string) {
         questions: updates.questions !== undefined ? updates.questions : form.questions,
         isPublished: updates.isPublished !== undefined ? updates.isPublished : form.isPublished,
       };
-      saveFormMutation.mutate(formData);
+      return saveFormMutation.mutateAsync(formData);
     } else {
       // If no form from API, update local state
       setLocalForm(prev => ({ ...prev, ...updates }));
+      return Promise.resolve();
     }
   }, [form, saveFormMutation]);
 

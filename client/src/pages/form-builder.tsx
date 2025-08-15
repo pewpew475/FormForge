@@ -245,21 +245,23 @@ export default function FormBuilder() {
                   <span className="text-sm text-slate-600">Auto-saved</span>
                 </div>
                 <Button
+                  type="button"
                   className={`${form.isPublished ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-500 hover:bg-green-600'} text-white`}
-                  onClick={async () => {
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
                     if (!form.isPublished) {
-                      updateForm({ isPublished: true });
-                      // Wait for the form to be saved before showing the modal
                       try {
-                        await saveForm();
+                        // Update the form to published status and wait for it to complete
+                        await updateForm({ isPublished: true });
+                        // Show the publish modal after successful update
                         setShowPublishModal(true);
                       } catch (error) {
-                        // If save fails, revert the published state
-                        updateForm({ isPublished: false });
+                        console.error('Failed to publish form:', error);
                       }
                     } else {
                       updateForm({ isPublished: false });
-                      saveForm();
                     }
                   }}
                   data-testid="button-toggle-publish"

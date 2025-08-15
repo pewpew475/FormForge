@@ -140,7 +140,14 @@ export default function Home() {
                           <AlertDialogHeader>
                             <AlertDialogTitle>Delete Form</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Are you sure you want to delete "{form.title}"? This action cannot be undone and will permanently delete the form and all its responses.
+                              Are you sure you want to delete "{form.title}"?
+                              <br /><br />
+                              <strong>This action cannot be undone and will permanently delete:</strong>
+                              <ul className="list-disc list-inside mt-2 text-sm">
+                                <li>The form and all its questions</li>
+                                <li>All submitted responses and data</li>
+                                <li>All analytics and statistics</li>
+                              </ul>
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>

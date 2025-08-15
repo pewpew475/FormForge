@@ -85,15 +85,31 @@ export default async function handler(req, res) {
       res.status(200).json(mappedForm);
 
     } else if (req.method === 'DELETE') {
-      // Delete form
-      const { error } = await supabase
+      // Delete form and all associated responses
+
+      // First, delete all responses for this form
+      const { error: responsesError } = await supabase
+        .from('responses')
+        .delete()
+        .eq('form_id', id);
+
+      if (responsesError) {
+        console.error('Error deleting responses:', responsesError);
+        throw responsesError;
+      }
+
+      // Then delete the form
+      const { error: formError } = await supabase
         .from('forms')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
-      
-      res.status(200).json({ message: 'Form deleted successfully' });
+      if (formError) {
+        console.error('Error deleting form:', formError);
+        throw formError;
+      }
+
+      res.status(200).json({ message: 'Form and all responses deleted successfully' });
 
     } else {
       res.status(405).json({ error: 'Method not allowed' });

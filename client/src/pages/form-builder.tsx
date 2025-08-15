@@ -253,15 +253,22 @@ export default function FormBuilder() {
 
                     if (!form.isPublished) {
                       try {
-                        // Update the form to published status and wait for it to complete
-                        await updateForm({ isPublished: true });
-                        // Show the publish modal after successful update
+                        // First update the form to published status
+                        updateForm({ isPublished: true });
+
+                        // Then save the form (this will handle both new and existing forms)
+                        const savedForm = await saveForm();
+
+                        // Show the publish modal after successful save
                         setShowPublishModal(true);
                       } catch (error) {
                         console.error('Failed to publish form:', error);
+                        // Revert the published status if save failed
+                        updateForm({ isPublished: false });
                       }
                     } else {
                       updateForm({ isPublished: false });
+                      saveForm();
                     }
                   }}
                   data-testid="button-toggle-publish"

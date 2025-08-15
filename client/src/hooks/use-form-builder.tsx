@@ -49,9 +49,16 @@ export function useFormBuilder(formId?: string) {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/forms"] });
 
+      // Update the query cache with the new form data
+      if (savedForm.id) {
+        queryClient.setQueryData([`/api/forms/${savedForm.id}`], savedForm);
+      }
+
       // If this was a new form (no formId), update the URL to include the new form ID
       if (!formId && savedForm.id) {
         window.history.replaceState({}, '', `/builder/${savedForm.id}`);
+        // Force a re-render by updating the query key
+        queryClient.invalidateQueries({ queryKey: [`/api/forms/${savedForm.id}`] });
       }
     },
     onError: () => {
@@ -75,8 +82,25 @@ export function useFormBuilder(formId?: string) {
       };
       return saveFormMutation.mutateAsync(formData);
     } else {
-      // If no form from API, update local state
-      setLocalForm(prev => ({ ...prev, ...updates }));
+      // If no form from API, update local state and save immediately if publishing
+      setLocalForm(prev => {
+        const updatedForm = { ...prev, ...updates };
+
+        // If we're publishing, save the form immediately
+        if (updates.isPublished === true) {
+          const formData: InsertForm = {
+            title: updatedForm.title || "Untitled Form",
+            description: updatedForm.description || "",
+            headerImage: updatedForm.headerImage || "",
+            questions: updatedForm.questions || [],
+            isPublished: true,
+          };
+          // Save and return the promise
+          setTimeout(() => saveFormMutation.mutateAsync(formData), 0);
+        }
+
+        return updatedForm;
+      });
       return Promise.resolve();
     }
   }, [form, saveFormMutation]);

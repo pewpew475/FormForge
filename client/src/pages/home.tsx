@@ -20,7 +20,9 @@ export default function Home() {
 
   const deleteFormMutation = useMutation({
     mutationFn: async (formId: string) => {
-      return apiRequest("DELETE", `/api/forms/${formId}`);
+      console.log('Deleting form with ID:', formId);
+      const response = await apiRequest("DELETE", `/api/forms/${formId}`);
+      return response;
     },
     onSuccess: () => {
       toast({
@@ -30,10 +32,11 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ["/api/forms"] });
       setDeleteFormId(null);
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('Delete form error:', error);
       toast({
         title: "Error",
-        description: "Failed to delete form",
+        description: `Failed to delete form: ${error.message || 'Unknown error'}`,
         variant: "destructive",
       });
     },

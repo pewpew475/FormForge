@@ -13,58 +13,61 @@ export function QuestionSidebar({ onAddQuestion }: QuestionSidebarProps) {
       title: "Categorize",
       description: "Drag items into categories",
       icon: LayersIcon,
-      color: "blue",
+      color: "from-blue-500 to-blue-600",
+      bgColor: "bg-blue-50",
+      textColor: "text-blue-700",
     },
     {
       type: "cloze" as const,
       title: "Cloze",
       description: "Fill in the blanks",
       icon: PenToolIcon,
-      color: "green",
+      color: "from-green-500 to-green-600",
+      bgColor: "bg-green-50",
+      textColor: "text-green-700",
     },
     {
       type: "comprehension" as const,
       title: "Comprehension",
       description: "Reading comprehension questions",
       icon: BookOpenIcon,
-      color: "purple",
+      color: "from-purple-500 to-purple-600",
+      bgColor: "bg-purple-50",
+      textColor: "text-purple-700",
     },
   ];
 
   return (
     <div className="p-6 flex-1">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-slate-800">Question Types</h3>
-        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-          <Plus className="w-4 h-4 text-primary" />
+      <div className="flex items-center space-x-3 mb-6">
+        <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center shadow-soft">
+          <Plus className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-foreground">Question Types</h3>
+          <p className="text-sm text-muted-foreground">Add questions to your form</p>
         </div>
       </div>
-      <p className="text-sm text-slate-600 mb-6">Click to add questions to your form</p>
-      <div className="space-y-3">
+
+      <div className="space-y-4">
         {questionTypes.map((questionType) => {
           const Icon = questionType.icon;
           return (
             <button
               key={questionType.type}
               onClick={() => onAddQuestion(questionType.type)}
-              className="w-full bg-gradient-to-r from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-4 hover:from-slate-100 hover:to-slate-200 hover:border-slate-300 hover:shadow-md transition-all duration-200 text-left group"
+              className={`w-full ${questionType.bgColor} border border-border rounded-xl p-4 hover:shadow-medium transition-all duration-200 text-left group hover:scale-[1.02] active:scale-[0.98]`}
               data-testid={`button-add-${questionType.type}`}
             >
-              <div className="flex items-center space-x-3">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${
-                  questionType.color === "blue" ? "bg-blue-100 group-hover:bg-blue-200" :
-                  questionType.color === "green" ? "bg-green-100 group-hover:bg-green-200" : "bg-purple-100 group-hover:bg-purple-200"
-                }`}>
-                  <Icon className={`w-6 h-6 ${
-                    questionType.color === "blue" ? "text-blue-600" :
-                    questionType.color === "green" ? "text-green-600" : "text-purple-600"
-                  }`} />
+              <div className="flex items-center space-x-4">
+                <div className={`w-12 h-12 bg-gradient-to-br ${questionType.color} rounded-xl flex items-center justify-center shadow-soft transition-transform group-hover:scale-110`}>
+                  <Icon className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold text-slate-800 group-hover:text-slate-900">{questionType.title}</h4>
-                  <p className="text-sm text-slate-600 group-hover:text-slate-700">{questionType.description}</p>
+                  <h4 className={`font-semibold ${questionType.textColor} group-hover:text-opacity-80`}>{questionType.title}</h4>
+                  <p className="text-sm text-muted-foreground group-hover:text-opacity-80">{questionType.description}</p>
                 </div>
-                <Plus className="w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                <Plus className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
               </div>
             </button>
           );

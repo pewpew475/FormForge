@@ -158,17 +158,17 @@ export default function FormFill() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       {/* Auto-save Status */}
-      <div className="fixed top-4 right-4 z-10">
+      <div className="fixed top-6 right-6 z-50">
         {autoSaveStatus === 'saving' && (
-          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-200">
+          <Badge variant="warning" className="shadow-medium animate-fade-in">
             <Clock className="w-3 h-3 mr-1" />
             Saving...
           </Badge>
         )}
         {autoSaveStatus === 'saved' && lastSaved && (
-          <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
+          <Badge variant="success" className="shadow-medium animate-fade-in">
             <CheckCircle className="w-3 h-3 mr-1" />
             Saved {new Date(lastSaved).toLocaleTimeString()}
           </Badge>
@@ -176,20 +176,20 @@ export default function FormFill() {
       </div>
 
       {/* Form Header */}
-      <div className="bg-white border-b border-slate-200">
-        <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="bg-white border-b border-border">
+        <div className="max-w-4xl mx-auto px-6 py-12">
           {form.headerImage && (
-            <div className="h-48 bg-cover bg-center rounded-xl mb-6" 
+            <div className="h-56 bg-cover bg-center rounded-2xl mb-8 shadow-medium"
                  style={{ backgroundImage: `url(${form.headerImage})` }}></div>
           )}
           {!form.headerImage && (
-            <div className="h-48 bg-gradient-to-r from-primary to-secondary rounded-xl mb-6"></div>
+            <div className="h-56 gradient-primary rounded-2xl mb-8 shadow-medium"></div>
           )}
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-slate-800 mb-4" data-testid="text-form-title">
+            <h1 className="text-4xl font-bold text-foreground mb-6 text-balance" data-testid="text-form-title">
               {form.title}
             </h1>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto" data-testid="text-form-description">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed text-balance" data-testid="text-form-description">
               {form.description}
             </p>
           </div>
@@ -197,20 +197,25 @@ export default function FormFill() {
       </div>
 
       {/* Form Questions */}
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        <div className="space-y-8">
+      <div className="max-w-4xl mx-auto px-6 py-12">
+        <div className="space-y-12">
           {form.questions.map((question, index) => (
-            <Card key={question.id} className="p-6" data-testid={`question-card-${question.id}`}>
-              <h2 className="text-2xl font-semibold text-slate-800 mb-4" data-testid={`text-question-title-${index}`}>
-                {index + 1}. {question.title}
-              </h2>
-              
+            <Card key={question.id} className="p-8 animate-slide-up" data-testid={`question-card-${question.id}`} style={{ animationDelay: `${index * 100}ms` }}>
+              <div className="flex items-start space-x-4 mb-6">
+                <div className="w-8 h-8 gradient-primary rounded-xl flex items-center justify-center text-white font-semibold text-sm shadow-soft">
+                  {index + 1}
+                </div>
+                <h2 className="text-2xl font-semibold text-foreground flex-1 text-balance" data-testid={`text-question-title-${index}`}>
+                  {question.title}
+                </h2>
+              </div>
+
               {question.image && (
-                <div className="mb-6">
-                  <img 
-                    src={question.image} 
-                    alt="Question image" 
-                    className="max-w-full h-auto rounded-lg"
+                <div className="mb-8">
+                  <img
+                    src={question.image}
+                    alt="Question image"
+                    className="max-w-full h-auto rounded-xl shadow-medium"
                   />
                 </div>
               )}
@@ -241,11 +246,12 @@ export default function FormFill() {
         </div>
 
         {/* Submit Button */}
-        <div className="text-center mt-12">
-          <Button 
+        <div className="text-center mt-16">
+          <Button
             onClick={handleSubmit}
             disabled={submitResponseMutation.isPending}
-            className="bg-primary text-white px-12 py-4 text-lg hover:bg-primary/90"
+            size="lg"
+            className="px-16 py-4 text-lg font-semibold shadow-medium hover:shadow-strong"
             data-testid="button-submit-form"
           >
             {submitResponseMutation.isPending ? "Submitting..." : "Submit Form"}

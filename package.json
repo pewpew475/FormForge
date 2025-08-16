@@ -14,6 +14,7 @@
     "db:generate": "node scripts/generate-migration.js",
     "db:migrate": "drizzle-kit migrate",
     "db:deploy": "node scripts/deploy-db.js",
+    "db:add-user-id": "node scripts/add-user-id-migration.js",
     "verify": "node scripts/verify-deployment.js",
     "setup": "node scripts/setup-deployment.js",
     "test-db": "node scripts/test-db.js",

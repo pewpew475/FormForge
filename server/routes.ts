@@ -5,6 +5,8 @@ import { insertFormSchema, insertResponseSchema, forms } from "@shared/schema";
 import { z } from "zod";
 import { getDb } from "./db";
 import { getSupabase } from "./supabase";
+import { authenticateUser, optionalAuth, type AuthenticatedRequest } from "./auth-middleware";
+import { eq, and } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoints
@@ -64,19 +66,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ status: "alive", timestamp: new Date().toISOString() });
   });
   // Forms API
-  app.get("/api/forms", async (req, res) => {
+  app.get("/api/forms", optionalAuth, async (req: AuthenticatedRequest, res) => {
     try {
-      const forms = await storage.getForms();
+      const forms = await storage.getForms(req.user?.id);
       res.json(forms);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch forms" });
     }
   });
 
-  app.get("/api/forms/:id", async (req, res) => {
+  app.get("/api/forms/:id", optionalAuth, async (req: AuthenticatedRequest, res) => {
     try {
       const { id } = req.params;
-      const form = await storage.getForm(id);
+      const form = await storage.getForm(id, req.user?.id);
       if (!form) {
         return res.status(404).json({ message: "Form not found" });
       }
@@ -86,10 +88,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/forms", async (req, res) => {
+  app.post("/api/forms", authenticateUser, async (req: AuthenticatedRequest, res) => {
     try {
       const formData = insertFormSchema.parse(req.body);
-      const form = await storage.createForm(formData);
+      const form = await storage.createForm({ ...formData, userId: req.user!.id });
       res.status(201).json(form);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -99,11 +101,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/forms/:id", async (req, res) => {
+  app.put("/api/forms/:id", authenticateUser, async (req: AuthenticatedRequest, res) => {
     try {
       const { id } = req.params;
       const formData = insertFormSchema.partial().parse(req.body);
-      const form = await storage.updateForm(id, formData);
+      const form = await storage.updateForm(id, formData, req.user!.id);
       if (!form) {
         return res.status(404).json({ message: "Form not found" });
       }
@@ -116,10 +118,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/forms/:id", async (req, res) => {
+  app.delete("/api/forms/:id", authenticateUser, async (req: AuthenticatedRequest, res) => {
     try {
       const { id } = req.params;
-      const deleted = await storage.deleteForm(id);
+      const deleted = await storage.deleteForm(id, req.user!.id);
       if (!deleted) {
         return res.status(404).json({ message: "Form not found" });
       }
@@ -222,9 +224,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     };
   }
 
-  app.get("/api/forms/:id/responses", async (req, res) => {
+  app.get("/api/forms/:id/responses", authenticateUser, async (req: AuthenticatedRequest, res) => {
     try {
       const { id: formId } = req.params;
+      // First check if the user owns this form
+      const form = await storage.getForm(formId, req.user!.id);
+      if (!form) {
+        return res.status(404).json({ message: "Form not found" });
+      }
       const responses = await storage.getResponses(formId);
       res.json(responses);
     } catch (error) {

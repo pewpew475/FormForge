@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { CheckCircle } from "lucide-react";
 import type { CategorizeQuestion } from "@shared/schema";
 
 interface CategorizeResponseProps {
@@ -70,48 +71,60 @@ export function CategorizeResponse({ question, value, onChange, disabled = false
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <div>
-        <h4 className="font-medium text-slate-700 mb-3">Items to categorize:</h4>
-        <div className="space-y-2 min-h-32 border-2 border-dashed border-slate-300 rounded-lg p-4">
+        <h4 className="font-semibold text-foreground mb-4 flex items-center">
+          <div className="w-2 h-2 bg-primary rounded-full mr-2"></div>
+          Items to categorize
+        </h4>
+        <div className="space-y-3 min-h-40 border-2 border-dashed border-border rounded-xl p-6 bg-muted/30">
           {availableItems.map((item, index) => (
             <div
               key={index}
-              className={`bg-blue-50 border border-blue-200 rounded-lg p-3 transition-colors ${
-                disabled ? "cursor-default" : "cursor-move hover:bg-blue-100"
+              className={`bg-white border border-border rounded-lg p-4 shadow-soft transition-all duration-200 ${
+                disabled ? "cursor-default" : "cursor-move hover:shadow-medium hover:scale-[1.02]"
               }`}
               data-testid={`item-${index}`}
             >
-              {item}
+              <span className="text-foreground font-medium">{item}</span>
             </div>
           ))}
           {availableItems.length === 0 && (
-            <div className="text-slate-500 text-center py-4">All items categorized</div>
+            <div className="text-muted-foreground text-center py-8 flex flex-col items-center">
+              <CheckCircle className="w-8 h-8 text-green-500 mb-2" />
+              <span className="font-medium">All items categorized</span>
+            </div>
           )}
         </div>
       </div>
-      
+
       <div>
-        <h4 className="font-medium text-slate-700 mb-3">Categories:</h4>
-        <div className="space-y-3">
+        <h4 className="font-semibold text-foreground mb-4 flex items-center">
+          <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+          Categories
+        </h4>
+        <div className="space-y-4">
           {question.categories?.map((categoryName, categoryIndex) => (
             <div
               key={categoryIndex}
-              className="border-2 border-dashed border-slate-300 rounded-lg p-4 min-h-20 bg-slate-50"
+              className="border-2 border-dashed border-border rounded-xl p-6 min-h-24 bg-muted/30"
               data-testid={`category-${categoryIndex}`}
             >
-              <div className="font-medium text-slate-600 mb-2">{categoryName}</div>
+              <div className="font-semibold text-foreground mb-3 flex items-center">
+                <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                {categoryName}
+              </div>
               <div className="space-y-2">
                 {categories[categoryName]?.map((item, itemIndex) => (
                   <div
                     key={itemIndex}
-                    className={`bg-green-50 border border-green-200 rounded-lg p-2 text-sm transition-colors ${
-                      disabled ? "cursor-default" : "cursor-pointer hover:bg-green-100"
+                    className={`bg-green-50 border border-green-200 rounded-lg p-3 text-sm transition-all duration-200 shadow-soft ${
+                      disabled ? "cursor-default" : "cursor-pointer hover:bg-green-100 hover:shadow-medium"
                     }`}
                     onClick={() => moveItemToAvailable(item)}
                     data-testid={`categorized-item-${categoryIndex}-${itemIndex}`}
                   >
-                    {item}
+                    <span className="text-green-800 font-medium">{item}</span>
                   </div>
                 ))}
               </div>

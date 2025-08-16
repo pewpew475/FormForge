@@ -10,6 +10,7 @@ export const forms = pgTable("forms", {
   headerImage: text("header_image"),
   questions: jsonb("questions").notNull().default([]),
   isPublished: boolean("is_published").notNull().default(false),
+  userId: text("user_id"), // Supabase auth user ID
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
   updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
 });

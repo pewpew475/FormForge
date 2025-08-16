@@ -161,6 +161,7 @@ config/production.json
 
 # Vite
 vite.config.ts.*
+<<<<<<< HEAD
 
 # Archives
 *.tar.gz
@@ -172,3 +173,9 @@ drizzle/
 
 # Local development
 .local
+=======
+*.tar.gz
+.env
+.env.production
+.env.example
+>>>>>>> 22937c530f101edb448867bc74ec850d896a82d1

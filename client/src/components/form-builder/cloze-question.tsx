@@ -37,32 +37,39 @@ export function ClozeQuestion({ question, onUpdate }: ClozeQuestionProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Cloze Text Editor */}
       <div>
-        <h4 className="font-medium text-slate-700 mb-3">Cloze Text:</h4>
-        <div className="border border-slate-300 rounded-lg p-4 bg-slate-50">
-          <Textarea
-            value={question.text || ""}
-            onChange={(e) => onUpdate({ text: e.target.value })}
-            placeholder="Enter your text here. Use [blank_id] to create blanks..."
-            className="min-h-32 border-none bg-transparent p-0"
-            data-testid="textarea-cloze-text"
-          />
-        </div>
-        <div className="flex items-center gap-2 mt-2">
-          <p className="text-sm text-slate-600">
-            Type your text and use [blank_id] format for blanks
-          </p>
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="font-semibold text-foreground flex items-center">
+            <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+            Cloze Text
+          </h4>
           <Button
             variant="outline"
             size="sm"
             onClick={createBlank}
             data-testid="button-create-blank"
+            className="shadow-soft hover:shadow-medium"
           >
-            <Plus className="w-4 h-4 mr-1" />
+            <Plus className="w-4 h-4 mr-2" />
             Create Blank
           </Button>
+        </div>
+        <div className="border border-border rounded-xl p-6 bg-muted/30 shadow-soft">
+          <Textarea
+            value={question.text || ""}
+            onChange={(e) => onUpdate({ text: e.target.value })}
+            placeholder="Enter your text here. Use [blank_id] to create blanks..."
+            className="min-h-40 border-none bg-transparent p-0 text-base leading-relaxed resize-none focus-visible:ring-0"
+            data-testid="textarea-cloze-text"
+          />
+        </div>
+        <div className="flex items-center gap-3 mt-3">
+          <div className="flex items-center text-sm text-muted-foreground">
+            <div className="w-1.5 h-1.5 bg-primary rounded-full mr-2"></div>
+            Type your text and use [blank_id] format for blanks
+          </div>
         </div>
       </div>
 

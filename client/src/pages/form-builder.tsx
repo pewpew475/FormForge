@@ -12,7 +12,7 @@ import { FormPreview } from "@/components/form-builder/form-preview";
 import { PublishModal } from "@/components/form-builder/publish-modal";
 import { FileUpload } from "@/components/ui/file-upload";
 import { Link } from "wouter";
-import { Save, Eye, ArrowLeft, Plus, Share, Settings, CheckCircle } from "lucide-react";
+import { Save, Eye, ArrowLeft, Plus, Share, Settings, CheckCircle, Clock } from "lucide-react";
 
 export default function FormBuilder() {
   const { id } = useParams<{ id?: string }>();
@@ -40,51 +40,64 @@ export default function FormBuilder() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <nav className="bg-white border-b border-slate-200 px-6 py-4">
+      <nav className="bg-white/95 backdrop-blur-sm border-b border-border px-6 py-4 sticky top-0 z-40">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-6">
             <Link href="/">
-              <Button variant="ghost" size="sm" data-testid="button-back-home">
+              <Button variant="ghost" size="sm" data-testid="button-back-home" className="text-muted-foreground hover:text-foreground">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
               </Button>
             </Link>
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <div className="w-3 h-3 bg-white rounded"></div>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 gradient-primary rounded-xl flex items-center justify-center shadow-soft">
+                <div className="w-3 h-3 bg-white rounded-sm"></div>
               </div>
-              <span className="text-xl font-bold text-slate-800">FormCraft</span>
+              <div>
+                <span className="text-xl font-bold text-foreground">FormForge</span>
+                <div className="text-xs text-muted-foreground font-medium">Form Builder</div>
+              </div>
             </div>
-            <span className="text-slate-600">Form Builder</span>
           </div>
           <div className="flex items-center space-x-3">
-            <Badge variant={form.isPublished ? "default" : "secondary"}>
-              {form.isPublished ? "Published" : "Draft"}
+            <Badge variant={form.isPublished ? "success" : "secondary"} className="animate-fade-in">
+              {form.isPublished ? (
+                <>
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Published
+                </>
+              ) : (
+                <>
+                  <Clock className="w-3 h-3 mr-1" />
+                  Draft
+                </>
+              )}
             </Badge>
-            <Button 
+            <Button
               onClick={() => setShowSettings(!showSettings)}
               variant="outline"
               size="sm"
               data-testid="button-form-settings"
+              className={showSettings ? "bg-accent" : ""}
             >
               <Settings className="w-4 h-4 mr-2" />
               Settings
             </Button>
-            <Button 
+            <Button
               onClick={() => setShowPreview(true)}
               variant="outline"
-              className="bg-secondary text-white hover:bg-secondary/90"
+              size="sm"
               data-testid="button-preview-form"
             >
               <Eye className="w-4 h-4 mr-2" />
               Preview
             </Button>
-            <Button 
-              onClick={saveForm} 
+            <Button
+              onClick={saveForm}
               disabled={isSaving}
-              className="bg-primary hover:bg-primary/90"
+              size="sm"
               data-testid="button-save-form"
             >
               <Save className="w-4 h-4 mr-2" />
@@ -94,16 +107,19 @@ export default function FormBuilder() {
         </div>
       </nav>
 
-      <div className="flex h-[calc(100vh-73px)]">
+      <div className="flex h-[calc(100vh-89px)]">
         {/* Sidebar */}
-        <div className="w-80 bg-white border-r border-slate-200 flex flex-col">
+        <div className="w-80 bg-white/50 backdrop-blur-sm border-r border-border flex flex-col">
           {/* Form Settings Panel */}
           {showSettings && (
-            <div className="p-6 border-b border-slate-200">
-              <h2 className="text-lg font-semibold text-slate-800 mb-4">Form Settings</h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+            <div className="p-6 border-b border-border animate-slide-up">
+              <div className="flex items-center space-x-2 mb-6">
+                <Settings className="w-5 h-5 text-primary" />
+                <h2 className="text-lg font-semibold text-foreground">Form Settings</h2>
+              </div>
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-foreground">
                     Form Title
                   </label>
                   <Input
@@ -111,22 +127,23 @@ export default function FormBuilder() {
                     onChange={(e) => updateForm({ title: e.target.value })}
                     placeholder="Enter form title"
                     data-testid="input-form-title"
+                    className="text-base"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-foreground">
                     Description
                   </label>
                   <Textarea
                     value={form.description || ""}
                     onChange={(e) => updateForm({ description: e.target.value })}
                     placeholder="Add form description..."
-                    className="h-20"
+                    className="min-h-[80px] resize-none"
                     data-testid="textarea-form-description"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-foreground">
                     Header Image
                   </label>
                   <FileUpload
@@ -136,10 +153,13 @@ export default function FormBuilder() {
                     data-testid="upload-header-image"
                   />
                 </div>
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-slate-700">
-                    Published
-                  </label>
+                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                  <div>
+                    <label className="text-sm font-medium text-foreground">
+                      Published
+                    </label>
+                    <p className="text-xs text-muted-foreground">Make form available to respondents</p>
+                  </div>
                   <Switch
                     checked={form.isPublished || false}
                     onCheckedChange={(checked) => updateForm({ isPublished: checked })}
@@ -151,27 +171,29 @@ export default function FormBuilder() {
           )}
 
           {/* Question Types Panel */}
-          <QuestionSidebar onAddQuestion={addQuestion} />
-          
+          <div className="flex-1">
+            <QuestionSidebar onAddQuestion={addQuestion} />
+          </div>
+
           {/* Quick Actions */}
-          <div className="mt-auto p-6 border-t border-slate-200">
+          <div className="mt-auto p-6 border-t border-border bg-muted/30">
             <div className="space-y-3">
-              <Button 
+              <Button
                 onClick={() => setShowPreview(true)}
-                variant="outline" 
-                className="w-full"
+                variant="outline"
+                className="w-full justify-start"
                 data-testid="button-quick-preview"
               >
                 <Eye className="w-4 h-4 mr-2" />
                 Quick Preview
               </Button>
-              <Button 
+              <Button
                 onClick={() => {
                   const formUrl = `${window.location.origin}/form/${form.id || 'preview'}`;
                   navigator.clipboard.writeText(formUrl);
                 }}
-                variant="outline" 
-                className="w-full"
+                variant="outline"
+                className="w-full justify-start"
                 data-testid="button-copy-share-link"
               >
                 <Share className="w-4 h-4 mr-2" />
@@ -182,20 +204,20 @@ export default function FormBuilder() {
         </div>
 
         {/* Main Editor */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col bg-muted/20">
           <div className="flex-1 p-8 overflow-y-auto">
             <div className="max-w-4xl mx-auto">
               {/* Form Header */}
-              <div className="bg-white rounded-xl shadow-sm border border-slate-200 mb-6">
+              <div className="bg-white rounded-2xl shadow-medium border border-border mb-8 overflow-hidden">
                 {form.headerImage && (
-                  <div className="h-32 bg-cover bg-center rounded-t-xl" 
+                  <div className="h-40 bg-cover bg-center"
                        style={{ backgroundImage: `url(${form.headerImage})` }}></div>
                 )}
                 {!form.headerImage && (
-                  <div className="h-32 bg-gradient-to-r from-primary to-secondary rounded-t-xl"></div>
+                  <div className="h-40 gradient-primary"></div>
                 )}
                 <div className="p-8">
-                  <h1 className="text-3xl font-bold text-slate-800 mb-2" data-testid="text-form-title-display">
+                  <h1 className="text-3xl font-bold text-foreground mb-3 text-balance" data-testid="text-form-title-display">
                     {form.title || "Untitled Form"}
                   </h1>
                   <p className="text-slate-600" data-testid="text-form-description-display">

@@ -1,20 +1,20 @@
 import { type Form, type InsertForm, type Response, type InsertResponse, forms, responses } from "@shared/schema";
 import { getDb } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
-  createForm(form: InsertForm): Promise<Form>;
-  getForm(id: string): Promise<Form | undefined>;
-  updateForm(id: string, form: Partial<InsertForm>): Promise<Form | undefined>;
-  deleteForm(id: string): Promise<boolean>;
-  getForms(): Promise<Form[]>;
+  createForm(form: InsertForm & { userId?: string }): Promise<Form>;
+  getForm(id: string, userId?: string): Promise<Form | undefined>;
+  updateForm(id: string, form: Partial<InsertForm>, userId?: string): Promise<Form | undefined>;
+  deleteForm(id: string, userId?: string): Promise<boolean>;
+  getForms(userId?: string): Promise<Form[]>;
   createResponse(response: InsertResponse): Promise<Response>;
   getResponses(formId: string): Promise<Response[]>;
 }
 
 export class DatabaseStorage implements IStorage {
-  async createForm(insertForm: InsertForm): Promise<Form> {
+  async createForm(insertForm: InsertForm & { userId?: string }): Promise<Form> {
     const db = getDb();
     const [form] = await db
       .insert(forms)
@@ -24,39 +24,69 @@ export class DatabaseStorage implements IStorage {
         headerImage: insertForm.headerImage || null,
         questions: insertForm.questions,
         isPublished: insertForm.isPublished || false,
+        userId: insertForm.userId || null,
       })
       .returning();
     return form as Form;
   }
 
-  async getForm(id: string): Promise<Form | undefined> {
+  async getForm(id: string, userId?: string): Promise<Form | undefined> {
     const db = getDb();
-    const [form] = await db.select().from(forms).where(eq(forms.id, id));
+    let query = db.select().from(forms).where(eq(forms.id, id));
+
+    // If userId is provided, filter by user ownership for private access
+    // For public form access (form filling), userId can be undefined
+    if (userId) {
+      query = query.where(and(eq(forms.id, id), eq(forms.userId, userId)));
+    }
+
+    const [form] = await query;
     return form as Form | undefined;
   }
 
-  async updateForm(id: string, updateData: Partial<InsertForm>): Promise<Form | undefined> {
+  async updateForm(id: string, updateData: Partial<InsertForm>, userId?: string): Promise<Form | undefined> {
     const db = getDb();
+    let whereCondition = eq(forms.id, id);
+
+    // If userId is provided, ensure user owns the form
+    if (userId) {
+      whereCondition = and(eq(forms.id, id), eq(forms.userId, userId));
+    }
+
     const [form] = await db
       .update(forms)
       .set({
         ...updateData,
         updatedAt: new Date(),
       })
-      .where(eq(forms.id, id))
+      .where(whereCondition)
       .returning();
     return form as Form | undefined;
   }
 
-  async deleteForm(id: string): Promise<boolean> {
+  async deleteForm(id: string, userId?: string): Promise<boolean> {
     const db = getDb();
-    const result = await db.delete(forms).where(eq(forms.id, id));
+    let whereCondition = eq(forms.id, id);
+
+    // If userId is provided, ensure user owns the form
+    if (userId) {
+      whereCondition = and(eq(forms.id, id), eq(forms.userId, userId));
+    }
+
+    const result = await db.delete(forms).where(whereCondition);
     return result.rowCount ? result.rowCount > 0 : false;
   }
 
-  async getForms(): Promise<Form[]> {
+  async getForms(userId?: string): Promise<Form[]> {
     const db = getDb();
-    const allForms = await db.select().from(forms).orderBy(forms.createdAt);
+    let query = db.select().from(forms);
+
+    // If userId is provided, filter by user ownership
+    if (userId) {
+      query = query.where(eq(forms.userId, userId));
+    }
+
+    const allForms = await query.orderBy(forms.createdAt);
     return allForms as Form[];
   }
 

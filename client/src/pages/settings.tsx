@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDarkMode } from '@/contexts/DarkModeContext';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { PasswordChangeDialog } from '@/components/auth/PasswordChangeDialog';
 import { Button } from '@/components/ui/button';
@@ -42,6 +43,7 @@ import {
 function SettingsContent() {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const { isDarkMode, setDarkMode } = useDarkMode();
 
   // Dialog states
   const [passwordChangeOpen, setPasswordChangeOpen] = useState(false);
@@ -50,7 +52,6 @@ function SettingsContent() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [formResponseNotifications, setFormResponseNotifications] = useState(true);
   const [marketingEmails, setMarketingEmails] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const [autoSave, setAutoSave] = useState(true);
   const [publicProfile, setPublicProfile] = useState(false);
 
@@ -88,9 +89,9 @@ function SettingsContent() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Navigation */}
-      <nav className="bg-white border-b border-slate-200 px-6 py-4">
+      <nav className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
           <div className="flex items-center space-x-4">
             <Link href="/profile">
@@ -103,7 +104,7 @@ function SettingsContent() {
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <div className="w-3 h-3 bg-white rounded"></div>
               </div>
-              <span className="text-xl font-bold text-slate-800">FormCraft</span>
+              <span className="text-xl font-bold text-slate-800 dark:text-slate-200">FormCraft</span>
             </div>
           </div>
         </div>
@@ -112,11 +113,11 @@ function SettingsContent() {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-6 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-800 mb-2 flex items-center gap-2">
+          <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-2">
             <SettingsIcon className="w-8 h-8" />
             Settings
           </h1>
-          <p className="text-slate-600">Manage your account preferences and security settings</p>
+          <p className="text-slate-600 dark:text-slate-400">Manage your account preferences and security settings</p>
         </div>
 
         <div className="space-y-6">
@@ -135,7 +136,7 @@ function SettingsContent() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="email-notifications">Email Notifications</Label>
-                  <p className="text-sm text-slate-600">Receive email updates about your forms</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Receive email updates about your forms</p>
                 </div>
                 <Switch
                   id="email-notifications"
@@ -147,7 +148,7 @@ function SettingsContent() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="response-notifications">Form Response Notifications</Label>
-                  <p className="text-sm text-slate-600">Get notified when someone submits a form</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Get notified when someone submits a form</p>
                 </div>
                 <Switch
                   id="response-notifications"
@@ -159,7 +160,7 @@ function SettingsContent() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="marketing-emails">Marketing Emails</Label>
-                  <p className="text-sm text-slate-600">Receive updates about new features and tips</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Receive updates about new features and tips</p>
                 </div>
                 <Switch
                   id="marketing-emails"
@@ -185,13 +186,13 @@ function SettingsContent() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="dark-mode">Dark Mode</Label>
-                  <p className="text-sm text-slate-600">Use dark theme for the interface</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Use dark theme for the interface</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Sun className="w-4 h-4" />
                   <Switch
                     id="dark-mode"
-                    checked={darkMode}
+                    checked={isDarkMode}
                     onCheckedChange={setDarkMode}
                   />
                   <Moon className="w-4 h-4" />
@@ -201,7 +202,7 @@ function SettingsContent() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="auto-save">Auto-save Forms</Label>
-                  <p className="text-sm text-slate-600">Automatically save form changes</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Automatically save form changes</p>
                 </div>
                 <Switch
                   id="auto-save"
@@ -213,7 +214,7 @@ function SettingsContent() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="public-profile">Public Profile</Label>
-                  <p className="text-sm text-slate-600">Allow others to see your public forms</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Allow others to see your public forms</p>
                 </div>
                 <Switch
                   id="public-profile"
@@ -239,7 +240,7 @@ function SettingsContent() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Account Type</Label>
-                  <div className="p-2 bg-slate-50 rounded-md text-slate-700 flex items-center gap-2">
+                  <div className="p-2 bg-slate-50 dark:bg-slate-700 rounded-md text-slate-700 dark:text-slate-300 flex items-center gap-2">
                     <Lock className="w-4 h-4 text-slate-500" />
                     {user.app_metadata?.provider === 'google' ? 'Google Account' : 
                      user.app_metadata?.provider === 'azure' ? 'Microsoft Account' : 
@@ -249,7 +250,7 @@ function SettingsContent() {
                 
                 <div className="space-y-2">
                   <Label>Last Sign In</Label>
-                  <div className="p-2 bg-slate-50 rounded-md text-slate-700">
+                  <div className="p-2 bg-slate-50 dark:bg-slate-700 rounded-md text-slate-700 dark:text-slate-300">
                     {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'Unknown'}
                   </div>
                 </div>

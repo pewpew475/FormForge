@@ -21,6 +21,9 @@
     "test-storage": "node scripts/test-storage.js",
     "test-upload": "node scripts/test-upload-with-image.js",
     "test-flow": "node scripts/test-complete-flow.js",
+    "test-auth": "node scripts/test-auth-flow.js",
+    "test-submission": "node scripts/test-one-time-submission.js",
+    "migrate-auth": "node scripts/migrate-responses-auth.js",
     "vercel-build": "npm run build"
   },
   "dependencies": {

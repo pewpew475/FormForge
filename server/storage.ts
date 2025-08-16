@@ -11,6 +11,7 @@ export interface IStorage {
   getForms(userId?: string): Promise<Form[]>;
   createResponse(response: InsertResponse): Promise<Response>;
   getResponses(formId: string): Promise<Response[]>;
+  getUserResponse(formId: string, userId: string): Promise<Response | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -108,6 +109,16 @@ export class DatabaseStorage implements IStorage {
       .orderBy(responses.submittedAt);
     return formResponses;
   }
+
+  async getUserResponse(formId: string, userId: string): Promise<Response | undefined> {
+    const db = getDb();
+    const [response] = await db
+      .select()
+      .from(responses)
+      .where(and(eq(responses.formId, formId), eq(responses.userId, userId)))
+      .limit(1);
+    return response;
+  }
 }
 
 export class MemStorage implements IStorage {
@@ -175,6 +186,12 @@ export class MemStorage implements IStorage {
   async getResponses(formId: string): Promise<Response[]> {
     return Array.from(this.responses.values()).filter(
       (response) => response.formId === formId
+    );
+  }
+
+  async getUserResponse(formId: string, userId: string): Promise<Response | undefined> {
+    return Array.from(this.responses.values()).find(
+      (response) => response.formId === formId && response.userId === userId
     );
   }
 }

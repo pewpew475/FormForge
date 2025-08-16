@@ -131,27 +131,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Responses API with scoring
-  app.post("/api/forms/:id/responses", async (req, res) => {
+  // Responses API with scoring - now requires authentication
+  app.post("/api/forms/:id/responses", authenticateUser, async (req: AuthenticatedRequest, res) => {
     try {
       const { id: formId } = req.params;
       const { answers } = req.body;
-      
+
       // Get form to calculate score
       const form = await storage.getForm(formId);
       if (!form) {
         return res.status(404).json({ message: "Form not found" });
       }
-      
+
+      // Check if user already submitted this form
+      const existingResponse = await storage.getUserResponse(formId, req.user!.id);
+      if (existingResponse) {
+        return res.status(409).json({
+          message: "You have already submitted a response to this form",
+          existingResponse: { ...existingResponse, score: existingResponse.score }
+        });
+      }
+
       // Calculate score
       const score = calculateScore(form.questions, answers);
-      
-      const responseData = insertResponseSchema.parse({ 
-        formId, 
-        answers, 
-        score 
+
+      const responseData = insertResponseSchema.parse({
+        formId,
+        answers,
+        score,
+        userId: req.user!.id
       });
-      
+
       const response = await storage.createResponse(responseData);
       res.status(201).json({ ...response, score });
     } catch (error) {

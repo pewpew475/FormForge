@@ -20,6 +20,7 @@ export const responses = pgTable("responses", {
   formId: varchar("form_id").notNull().references(() => forms.id),
   answers: jsonb("answers").notNull(),
   score: jsonb("score"), // Store scoring results
+  userId: text("user_id"), // Supabase auth user ID
   submittedAt: timestamp("submitted_at").notNull().default(sql`now()`),
 });
 

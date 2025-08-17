@@ -5,6 +5,7 @@ import { Edit, Trash2, LayersIcon, PenToolIcon, BookOpenIcon, ChevronDown, Chevr
 import { CategorizeQuestion } from "./categorize-question";
 import { ClozeQuestion } from "./cloze-question";
 import { ComprehensionQuestion } from "./comprehension-question";
+import { QuestionTypeSelector } from "./question-type-selector";
 import { FileUpload } from "@/components/ui/file-upload";
 import type { Question } from "@shared/schema";
 
@@ -17,6 +18,7 @@ interface QuestionEditorProps {
 
 export function QuestionEditor({ question, index, onUpdate, onDelete }: QuestionEditorProps) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [showTypeSelector, setShowTypeSelector] = useState(false);
 
   const getQuestionConfig = () => {
     switch (question.type) {
@@ -104,8 +106,9 @@ export function QuestionEditor({ question, index, onUpdate, onDelete }: Question
             variant="ghost"
             size="sm"
             className="text-muted-foreground hover:text-foreground"
-            onClick={() => setIsExpanded(!isExpanded)}
+            onClick={() => setShowTypeSelector(true)}
             data-testid={`button-edit-question-${question.id}`}
+            title="Change question type"
           >
             <Edit className="w-4 h-4" />
           </Button>
@@ -160,6 +163,59 @@ export function QuestionEditor({ question, index, onUpdate, onDelete }: Question
           {renderQuestionContent()}
         </>
       )}
+
+      {/* Question Type Selector Modal */}
+      <QuestionTypeSelector
+        isOpen={showTypeSelector}
+        onClose={() => setShowTypeSelector(false)}
+        onSelect={(newType: Question["type"]) => {
+          // When changing question type, reset question-specific data but keep title and image
+          const baseQuestion = {
+            title: question.title,
+            image: question.image,
+            type: newType,
+          };
+
+          // Reset type-specific properties
+          switch (newType) {
+            case "categorize":
+              onUpdate({
+                ...baseQuestion,
+                items: [],
+                categories: [],
+                text: undefined,
+                blanks: undefined,
+                passage: undefined,
+                questions: undefined,
+              });
+              break;
+            case "cloze":
+              onUpdate({
+                ...baseQuestion,
+                text: "",
+                blanks: [],
+                items: undefined,
+                categories: undefined,
+                passage: undefined,
+                questions: undefined,
+              });
+              break;
+            case "comprehension":
+              onUpdate({
+                ...baseQuestion,
+                passage: "",
+                questions: [],
+                items: undefined,
+                categories: undefined,
+                text: undefined,
+                blanks: undefined,
+              });
+              break;
+          }
+        }}
+        title="Change Question Type"
+        description="Select a new type for this question. Note: This will reset question-specific content."
+      />
     </div>
   );
 }

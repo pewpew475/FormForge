@@ -10,15 +10,18 @@ import { QuestionSidebar } from "@/components/form-builder/question-sidebar";
 import { QuestionEditor } from "@/components/form-builder/question-editor";
 import { FormPreview } from "@/components/form-builder/form-preview";
 import { PublishModal } from "@/components/form-builder/publish-modal";
+import { QuestionTypeSelector } from "@/components/form-builder/question-type-selector";
 import { FileUpload } from "@/components/ui/file-upload";
 import { Link } from "wouter";
 import { Save, Eye, ArrowLeft, Plus, Share, Settings, CheckCircle, Clock } from "lucide-react";
+import type { Question } from "@shared/schema";
 
 export default function FormBuilder() {
   const { id } = useParams<{ id?: string }>();
   const [showPreview, setShowPreview] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
+  const [showQuestionTypeSelector, setShowQuestionTypeSelector] = useState(false);
   const [publishedForm, setPublishedForm] = useState<any>(null);
   const {
     form,
@@ -239,9 +242,9 @@ export default function FormBuilder() {
                 ))}
 
                 {/* Add Question Button */}
-                <div 
-                  className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-primary transition-colors cursor-pointer"
-                  onClick={() => addQuestion("categorize")}
+                <div
+                  className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-primary transition-colors cursor-pointer hover:bg-slate-50"
+                  onClick={() => setShowQuestionTypeSelector(true)}
                   data-testid="button-add-question"
                 >
                   <Plus className="w-8 h-8 text-slate-400 mx-auto mb-3" />
@@ -330,6 +333,15 @@ export default function FormBuilder() {
           }}
         />
       )}
+
+      {/* Question Type Selector Modal */}
+      <QuestionTypeSelector
+        isOpen={showQuestionTypeSelector}
+        onClose={() => setShowQuestionTypeSelector(false)}
+        onSelect={(type: Question["type"]) => addQuestion(type)}
+        title="Add New Question"
+        description="Choose the type of question you want to create"
+      />
     </div>
   );
 }

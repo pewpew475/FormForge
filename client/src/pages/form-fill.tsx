@@ -358,8 +358,8 @@ export default function FormFill() {
                 ← Return to Homepage
               </Button>
             </div>
-          </div>
-        </Card>
+          </Card>
+        </div>
       </div>
     );
   }

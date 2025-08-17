@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Edit, Trash2, LayersIcon, PenToolIcon, BookOpenIcon } from "lucide-react";
+import { Edit, Trash2, LayersIcon, PenToolIcon, BookOpenIcon, ChevronDown, ChevronUp } from "lucide-react";
 import { CategorizeQuestion } from "./categorize-question";
 import { ClozeQuestion } from "./cloze-question";
 import { ComprehensionQuestion } from "./comprehension-question";
@@ -15,6 +16,8 @@ interface QuestionEditorProps {
 }
 
 export function QuestionEditor({ question, index, onUpdate, onDelete }: QuestionEditorProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
+
   const getQuestionConfig = () => {
     switch (question.type) {
       case "categorize":
@@ -92,6 +95,16 @@ export function QuestionEditor({ question, index, onUpdate, onDelete }: Question
             variant="ghost"
             size="sm"
             className="text-muted-foreground hover:text-foreground"
+            onClick={() => setIsExpanded(!isExpanded)}
+            data-testid={`button-toggle-question-${question.id}`}
+          >
+            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground hover:text-foreground"
+            onClick={() => setIsExpanded(!isExpanded)}
             data-testid={`button-edit-question-${question.id}`}
           >
             <Edit className="w-4 h-4" />
@@ -108,28 +121,45 @@ export function QuestionEditor({ question, index, onUpdate, onDelete }: Question
         </div>
       </div>
 
-      <div className="mb-4">
-        <Input
-          value={question.title || ""}
-          onChange={(e) => onUpdate({ title: e.target.value })}
-          placeholder="Enter your question here..."
-          className="text-lg font-medium border-none outline-none bg-transparent text-slate-800 px-0"
-          data-testid={`input-question-title-${question.id}`}
-        />
-      </div>
+      {/* Collapsed view - just show the question title */}
+      {!isExpanded && (
+        <div className="py-2">
+          <p className="text-lg font-medium text-slate-800 truncate">
+            {question.title || "Untitled Question"}
+          </p>
+          <p className="text-sm text-slate-500 mt-1">
+            Click edit to modify this question
+          </p>
+        </div>
+      )}
 
-      {/* Image Upload for Question */}
-      <div className="mb-6">
-        <FileUpload
-          onUpload={(url) => onUpdate({ image: url })}
-          currentImage={question.image}
-          onRemove={() => onUpdate({ image: undefined })}
-          className="h-24"
-        />
-      </div>
+      {/* Expanded view - full editor */}
+      {isExpanded && (
+        <>
+          <div className="mb-4">
+            <Input
+              value={question.title || ""}
+              onChange={(e) => onUpdate({ title: e.target.value })}
+              placeholder="Enter your question here..."
+              className="text-lg font-medium border-none outline-none bg-transparent text-slate-800 px-0"
+              data-testid={`input-question-title-${question.id}`}
+            />
+          </div>
 
-      {/* Question-specific content */}
-      {renderQuestionContent()}
+          {/* Image Upload for Question */}
+          <div className="mb-6">
+            <FileUpload
+              onUpload={(url) => onUpdate({ image: url })}
+              currentImage={question.image}
+              onRemove={() => onUpdate({ image: undefined })}
+              className="h-24"
+            />
+          </div>
+
+          {/* Question-specific content */}
+          {renderQuestionContent()}
+        </>
+      )}
     </div>
   );
 }

@@ -49,18 +49,38 @@ export default function FormFill() {
     return `${diff} minutes`;
   };
 
+  // Check if a question is properly answered
+  const isQuestionAnswered = (questionId: string) => {
+    const response = responses[questionId];
+    if (!response) return false;
+
+    // For array responses (categorize questions)
+    if (Array.isArray(response)) {
+      return response.length > 0;
+    }
+
+    // For object responses (comprehension questions with multiple parts)
+    if (typeof response === 'object' && response !== null) {
+      return Object.values(response).some(value =>
+        value !== null && value !== undefined && value !== ''
+      );
+    }
+
+    // For string responses (cloze questions)
+    if (typeof response === 'string') {
+      return response.trim().length > 0;
+    }
+
+    return false;
+  };
+
   // Calculate completion percentage
   const getCompletionPercentage = () => {
     if (!form) return 0;
     const totalQuestions = form.questions.length;
-    const answeredQuestions = Object.keys(responses).filter(key => {
-      const response = responses[key];
-      return response && (
-        (Array.isArray(response) && response.length > 0) ||
-        (typeof response === 'object' && Object.keys(response).length > 0) ||
-        (typeof response === 'string' && response.trim().length > 0)
-      );
-    }).length;
+    const answeredQuestions = form.questions.filter(question =>
+      isQuestionAnswered(question.id)
+    ).length;
     return Math.round((answeredQuestions / totalQuestions) * 100);
   };
 
@@ -567,7 +587,7 @@ export default function FormFill() {
                     </h2>
                     <div className="flex items-center space-x-4 text-sm text-slate-500">
                       <span className="bg-slate-100 px-2 py-1 rounded-full capitalize">{question.type}</span>
-                      {responses[question.id] && (
+                      {isQuestionAnswered(question.id) && (
                         <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center space-x-1">
                           <CheckCircle className="w-3 h-3" />
                           <span>Answered</span>

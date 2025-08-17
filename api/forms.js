@@ -1,6 +1,36 @@
 // Forms API endpoint for Vercel
 import { getSupabase } from '../dist/supabase.js';
 
+// Authentication helper for Vercel API routes
+async function authenticateUser(req) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+
+  const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+  const supabase = getSupabase();
+
+  try {
+    // Verify the JWT token
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+
+    if (error || !user) {
+      return null;
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      ...user.user_metadata,
+    };
+  } catch (error) {
+    console.error('Authentication error:', error);
+    return null;
+  }
+}
+
 export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -15,6 +45,14 @@ export default async function handler(req, res) {
   try {
     const supabase = getSupabase();
     const { id } = req.query;
+
+    // Authenticate user for all operations except individual form GET (for form filling)
+    const user = await authenticateUser(req);
+    const requiresAuth = req.method !== 'GET' || !id; // GET individual form doesn't require auth for form filling
+
+    if (requiresAuth && !user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
 
     if (req.method === 'GET') {
       if (id) {
@@ -44,11 +82,17 @@ export default async function handler(req, res) {
 
         res.status(200).json(mappedForm);
       } else {
-        // Get all forms
-        const { data: forms, error } = await supabase
+        // Get all forms - filter by user if authenticated
+        let query = supabase
           .from('forms')
-          .select('*')
-          .order('created_at', { ascending: false });
+          .select('*');
+
+        // Filter by user if authenticated
+        if (user) {
+          query = query.eq('user_id', user.id);
+        }
+
+        const { data: forms, error } = await query.order('created_at', { ascending: false });
 
         if (error) throw error;
 
@@ -61,14 +105,19 @@ export default async function handler(req, res) {
           questions: form.questions || [],
           isPublished: form.is_published,
           createdAt: form.created_at,
-          updatedAt: form.updated_at
+          updatedAt: form.updated_at,
+          userId: form.user_id
         }));
 
         res.status(200).json(mappedForms);
       }
       
     } else if (req.method === 'POST') {
-      // Create new form
+      // Create new form - requires authentication
+      if (!user) {
+        return res.status(401).json({ error: 'Authentication required to create forms' });
+      }
+
       const formData = req.body;
 
       const { data: form, error } = await supabase
@@ -78,7 +127,8 @@ export default async function handler(req, res) {
           description: formData.description,
           header_image: formData.headerImage,
           questions: formData.questions || [],
-          is_published: formData.isPublished || false
+          is_published: formData.isPublished || false,
+          user_id: user.id
         }])
         .select()
         .single();
@@ -94,13 +144,18 @@ export default async function handler(req, res) {
         questions: form.questions || [],
         isPublished: form.is_published,
         createdAt: form.created_at,
-        updatedAt: form.updated_at
+        updatedAt: form.updated_at,
+        userId: form.user_id
       };
 
       res.status(201).json(mappedForm);
 
     } else if (req.method === 'PUT') {
-      // Update form
+      // Update form - requires authentication
+      if (!user) {
+        return res.status(401).json({ error: 'Authentication required to update forms' });
+      }
+
       if (!id) {
         return res.status(400).json({ error: 'Form ID is required for updates' });
       }
@@ -118,12 +173,13 @@ export default async function handler(req, res) {
           updated_at: new Date().toISOString()
         })
         .eq('id', id)
+        .eq('user_id', user.id) // Ensure user owns the form
         .select()
         .single();
 
       if (error) {
         if (error.code === 'PGRST116') {
-          return res.status(404).json({ error: 'Form not found' });
+          return res.status(404).json({ error: 'Form not found or you do not have permission to update it' });
         }
         throw error;
       }
@@ -137,7 +193,8 @@ export default async function handler(req, res) {
         questions: form.questions || [],
         isPublished: form.is_published,
         createdAt: form.created_at,
-        updatedAt: form.updated_at
+        updatedAt: form.updated_at,
+        userId: form.user_id
       };
 
       res.status(200).json(mappedForm);

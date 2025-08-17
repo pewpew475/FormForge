@@ -40,7 +40,8 @@ export default async function handler(req, res) {
         questions: form.questions || [],
         isPublished: form.is_published,
         createdAt: form.created_at,
-        updatedAt: form.updated_at
+        updatedAt: form.updated_at,
+        userId: form.user_id
       };
 
       res.status(200).json(mappedForm);

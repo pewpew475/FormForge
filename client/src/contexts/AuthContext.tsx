@@ -58,10 +58,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithOAuth = async (provider: 'google' | 'azure') => {
     try {
+      // Check if we're on a form page and preserve the URL
+      const currentPath = window.location.pathname;
+      const isFormPage = currentPath.startsWith('/form/');
+      const redirectTo = isFormPage
+        ? `${window.location.origin}${currentPath}`
+        : `${window.location.origin}/`;
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo,
         },
       });
 

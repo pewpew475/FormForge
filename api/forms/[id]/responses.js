@@ -1,6 +1,36 @@
 // Form responses API endpoint for Vercel
 import { getSupabase } from '../../../dist/supabase.js';
 
+// Authentication helper for Vercel API routes
+async function authenticateUser(req) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+
+  const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+  const supabase = getSupabase();
+
+  try {
+    // Verify the JWT token
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+
+    if (error || !user) {
+      return null;
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      ...user.user_metadata,
+    };
+  } catch (error) {
+    console.error('Authentication error:', error);
+    return null;
+  }
+}
+
 // Simple scoring function
 function calculateScore(questions, answers) {
   if (!questions || !answers) return 0;
@@ -95,6 +125,12 @@ export default async function handler(req, res) {
     const supabase = getSupabase();
     const { id: formId } = req.query;
 
+    // Authenticate user for all operations
+    const user = await authenticateUser(req);
+    if (!user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
     if (req.method === 'GET') {
       // Get all responses for the form with statistics
       const { data: responses, error: responsesError } = await supabase
@@ -177,9 +213,24 @@ export default async function handler(req, res) {
     } else if (req.method === 'POST') {
       // Create new response
       const { answers } = req.body;
-      
+
       if (!answers) {
         return res.status(400).json({ error: 'Answers are required' });
+      }
+
+      // Check if user already submitted this form
+      const { data: existingResponse, error: existingError } = await supabase
+        .from('responses')
+        .select('*')
+        .eq('form_id', formId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (existingResponse) {
+        return res.status(409).json({
+          error: 'You have already submitted a response to this form',
+          existingResponse: { ...existingResponse, score: existingResponse.score }
+        });
       }
 
       // Get form to calculate score
@@ -204,13 +255,14 @@ export default async function handler(req, res) {
         .insert([{
           form_id: formId,
           answers,
-          score
+          score,
+          user_id: user.id
         }])
         .select()
         .single();
 
       if (error) throw error;
-      
+
       res.status(201).json({ ...response, score });
 
     } else {
